@@ -1,0 +1,149 @@
+# ==========================================
+# Node / npm
+# Based on github/gitignore Node.gitignore
+# ==========================================
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Diagnostic reports
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage
+coverage/
+*.lcov
+.nyc_output/
+
+# Dependencies
+node_modules/
+jspm_packages/
+web_modules/
+
+# TypeScript
+*.tsbuildinfo
+
+# npm cache
+.npm/
+
+# Tool caches
+.eslintcache
+.stylelintcache
+.cache/
+.parcel-cache/
+.vite/
+
+# npm pack output
+*.tgz
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Build output
+dist/
+out/
+.output/
+
+# Vite temporary files
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+
+# ==========================================
+# Visual Studio
+# Based on github/gitignore VisualStudio.gitignore
+# ==========================================
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# Visual Studio cache
+.vs/
+
+# Build output
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+bld/
+
+# Test results
+[Tt]est[Rr]esult*/
+*.trx
+
+# Temporary / generated Visual Studio files
+*.tmp
+*.tmp_proj
+*.tlog
+*.pdb
+*.binlog
+MSBuild_Logs/
+
+# ReSharper / IDE add-ons
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# Visual Studio local history
+**/.localhistory/
+.vshistory/
+
+
+# ==========================================
+# Visual Studio Code
+# Based on github/gitignore Global/VisualStudioCode.gitignore
+# ==========================================
+
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+
+# Keep workspace files shareable
+!*.code-workspace
+
+# Built VS Code extensions
+*.vsix
+
+# Local history
+.history/
+
+
+# ==========================================
+# OS / editors
+# ==========================================
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Editor temporary files
+*~
+*.swp
+*.swo
