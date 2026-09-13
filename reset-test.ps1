@@ -28,7 +28,7 @@ if (Test-Path $target) {
     Remove-Item -Recurse -Force $target
 }
 
-Write-Host "==> Building xibo-workspace..."
+Write-Host "==> Building xibo-modules..."
 
 Push-Location $workspace
 

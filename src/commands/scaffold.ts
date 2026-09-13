@@ -166,7 +166,7 @@ export async function runNewCommand(
             name: moduleName
         },
         devDependencies: {
-            "xibo-workspace": "^1.0.0"
+            "xibo-modules": "^1.0.0"
         }
     };
 

@@ -1,35 +1,62 @@
-import { createServer } from "vite";
+import { resolve } from "node:path";
+import { BootstrapDiscovery } from "../build/xibo-build.js";
+
 
 export async function runBuildCommand(): Promise<void> {
     const projectRoot = process.cwd();
-    const bootstrapFile = "/.bootstrap/module.ts";
 
-    const vite = await createServer({
-        root: projectRoot,
-        server: {
-            middlewareMode: true
-        },
-        appType: "custom"
-    });
+    //
+    // 1. Discover bootstrap definition sources
+    //
+    const discovery = new BootstrapDiscovery(
+        resolve(projectRoot, ".bootstrap")
+    );
 
-    try {
-        const loaded = await vite.ssrLoadModule(
-            bootstrapFile
-        );
+    const bootstrap = await discovery.discover();
 
-        if (!loaded.default) {
-            throw new Error(
-                ".bootstrap/module.ts must export a default XiboModule class."
-            );
-        }
+    //
+    // 2. Validate and ingest the Xibo module definition
+    //
+    // const ingestor = new ModuleIngestor(projectRoot);
+    // const moduleDefinition = await ingestor.ingest(bootstrap);
 
-        const ModuleType = loaded.default;
-        const module = new ModuleType();
+    //
+    // 3. Compile non-bootstrap project sources
+    //
+    // const compilation = await compileProjectSources(...);
 
-        console.log("Loaded Xibo module:");
-        console.log(module);
-    }
-    finally {
-        await vite.close();
-    }
+    //
+    // 4. Run build transformations / user tasks
+    //
+    // const transformed = await runBuildTasks(...);
+
+    //
+    // ...
+    //
+
+    //
+    // n-2. Collect final module resources
+    //
+    // const resources = await collectResources({
+    //     compilation,
+    //     datatype,
+    //     assets,
+    //     provider,
+    //     ...
+    // });
+
+    //
+    // n-1. Emit Xibo definitions
+    //
+    // await emitModuleXml(moduleDefinition, resources);
+    // await emitTemplateXml(...);
+    // await emitDataTypeXml(...);
+
+    //
+    // n. Package final Xibo module
+    //
+    // await packageModule(...);
+
+    console.log("Xibo module definition ingested:");
+    console.log(bootstrap);
 }

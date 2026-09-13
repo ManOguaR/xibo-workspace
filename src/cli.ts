@@ -10,6 +10,10 @@ import {
     runBuildCommand
 } from "./commands/build.js";
 
+import { 
+    runRunCommand 
+} from "./commands/run.js";
+
 const [, , command, ...args] = process.argv;
 
 switch (command) {
@@ -23,6 +27,10 @@ switch (command) {
 
     case "build":
         await runBuildCommand();
+        break;
+        
+    case "run":
+        await runRunCommand();
         break;
 
     default:
@@ -218,7 +226,7 @@ switch (command) {
 //             name: moduleName
 //         },
 //         devDependencies: {
-//             "xibo-workspace": "^1.0.0"
+//             "xibo-modules": "^1.0.0"
 //         }
 //     };
 

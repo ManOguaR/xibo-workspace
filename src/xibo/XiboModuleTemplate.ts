@@ -13,4 +13,3 @@ export abstract class XiboStaticTemplate extends XiboModuleTemplate {
 export abstract class XiboElementTemplate extends XiboModuleTemplate {
     readonly type = "element";
 }
-
