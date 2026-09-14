@@ -79,22 +79,30 @@ export class BootstrapValidator {
     ): ValidationIssue[] {
         const issues: ValidationIssue[] = [];
         
-        const name = metadata["name"];
-        
-        if (
-            typeof name === "string" &&
-            module.constructor.name !== name
-        ) {
-            issues.push({
-                severity: ValidationSeverity.Warning,
-                code: "bootstrap.module.name-mismatch",
-                path: "name",
-                message:
-                    `Module class '${module.constructor.name}' ` +
-                    `does not match metadata name '${name}'.`
-            });
+        const id = metadata["id"];
+
+        if (typeof id === "string") {
+            const expectedName = id
+                .split(/[^a-zA-Z0-9]+/)
+                .filter(Boolean)
+                .map(part =>
+                    part.charAt(0).toUpperCase() +
+                    part.slice(1)
+                )
+                .join("");
+
+            if (module.constructor.name !== expectedName) {
+                issues.push({
+                    severity: ValidationSeverity.Warning,
+                    code: "bootstrap.module.name-mismatch",
+                    path: "id",
+                    message:
+                        `Module '${id}' expects class '${expectedName}', ` +
+                        `but '${module.constructor.name}' was discovered.`
+                });
+            }
         }
-        
+
         return issues;
     }
     
