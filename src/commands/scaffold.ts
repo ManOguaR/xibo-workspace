@@ -122,7 +122,8 @@ export async function runNewCommand(
             }
         );
     }
-
+    
+    const moduleId = toIdName(name);
     const moduleName = toTypeName(name);
 
     const moduleFile = resolve(
@@ -162,7 +163,7 @@ export async function runNewCommand(
         private: true,
         type: "module",
         xibo: {
-            id: name,
+            id: moduleId,
             name: moduleName
         },
         devDependencies: {
@@ -183,7 +184,7 @@ export async function runNewCommand(
     );
 
     console.log(
-        `Created '${name}' from '${requestedTemplate}' template at ${targetRoot}`
+        `Created '${moduleId}' from '${requestedTemplate}' template at ${targetRoot}`
     );
 }
 
@@ -254,18 +255,19 @@ export async function runAddCommand(
         "utf8"
     );
 
-    const typeName = toTypeName(name);
+    const templateId = toIdName(name);
+    const templateName = toTypeName(name);
 
     const targetFile = resolve(
         targetRoot,
-        `${typeName}.ts`
+        `${templateName}.ts`
     );
 
     await writeFile(
         targetFile,
         source.replaceAll(
             "__TEMPLATE_NAME__",
-            typeName
+            templateName
         )
     );
 
@@ -282,7 +284,9 @@ export async function runAddCommand(
     );
 
     packageJson.xibo ??= {};
-    packageJson.xibo[name] = {};
+    packageJson.xibo[templateId] = {
+        name: templateName
+    };
 
     await writeFile(
         packageJsonPath,
@@ -292,9 +296,9 @@ export async function runAddCommand(
             2
         ) + "\n"
     );
-    
+
     console.log(
-        `Added '${template}' '${typeName}' at ${targetFile}`
+        `Added '${template}' '${templateId}' at ${targetFile}`
     );
 }
 
@@ -371,11 +375,21 @@ function getPackageRoot(): string {
     );
 }
 
-function toTypeName(
+function toIdName(
     name: string
 ): string {
     return name
-        .split(/[^a-zA-Z0-9]+/)
+        .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+        .replace(/[^a-zA-Z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .toLowerCase();
+}
+
+function toTypeName(
+    name: string
+): string {
+    return toIdName(name)
+        .split("-")
         .filter(Boolean)
         .map(part =>
             part.charAt(0).toUpperCase() +
