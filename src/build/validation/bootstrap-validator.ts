@@ -1,10 +1,27 @@
+import { XiboModuleTemplate } from 'xibo-modules';
 import type { JsonObject, JsonValue, ValidationIssue, BootstrapDiscoveryResult  } from "../private-types";
 
 export class BootstrapValidator {
 
-    validate(bootstrap: BootstrapDiscoveryResult) : boolean {
+    validateIdentity(
+        metadata: JsonObject
+    ): ValidationIssue[] {
+        const issues: ValidationIssue[] = [];
 
-        return bootstrap.issues.length == 0;
+        // reglas de id
+
+        return issues;
+    }
+
+    validateModuleTemplates(
+        metadata: JsonObject,
+        templates: XiboModuleTemplate[]
+    ): ValidationIssue[] {
+        const issues: ValidationIssue[] = [];
+
+        // metadata requerida para ese template concreto
+
+        return issues;
     }
 }
 

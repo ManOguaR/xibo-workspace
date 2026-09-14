@@ -7,19 +7,16 @@ export async function runBuildCommand(): Promise<void> {
     //    
     const projectRoot = process.cwd();
     const discovery = new BootstrapDiscovery(resolve(projectRoot, ".bootstrap"));
-
+    
     const bootstrap = await discovery.discover();
+    
+    if (bootstrap.issues.length > 0) {
+        throw new BuildValidationError(bootstrap.issues);
+    }
 
     //
     // 2. Validate and ingest the Xibo module definition
     //
-    const bootstrapValidator = new BootstrapValidator();
-    
-    if (!bootstrapValidator.validate(bootstrap)) {
-        throw new BuildValidationError(bootstrap.issues);
-    }
-
-
     // const ingestor = new ModuleIngestor(projectRoot);
     // const moduleDefinition = await ingestor.ingest(bootstrap);
 

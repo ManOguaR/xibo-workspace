@@ -4,10 +4,10 @@ import { extname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { XiboModule, XiboModuleTemplate } from "xibo-modules";
+import { BootstrapValidator } from "../validation/bootstrap-validator.js"
 import { BootstrapDiscoveryResult } from "../private-types.js";
 
 import { JsonObject, MetadataMerger } from "./metadata-merger.js";
-
 
 interface PackageJson {
     xibo?: JsonObject;
@@ -16,9 +16,11 @@ interface PackageJson {
 type Constructor = new () => unknown;
 
 export class BootstrapDiscovery {
+    private readonly validator : BootstrapValidator;
     constructor(
         private readonly bootstrapRoot: string
     ) {
+        this.validator = new BootstrapValidator();
     }
 
     async discover(): Promise<BootstrapDiscoveryResult> {
