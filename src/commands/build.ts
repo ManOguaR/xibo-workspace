@@ -1,22 +1,26 @@
 import { resolve } from "node:path";
-import { BootstrapDiscovery } from "../build/xibo-build.js";
-
+import { BootstrapDiscovery, MetadataValidator, ValidationIssue } from "../build/xibo-build.js";
 
 export async function runBuildCommand(): Promise<void> {
-    const projectRoot = process.cwd();
-
     //
     // 1. Discover bootstrap definition sources
-    //
-    const discovery = new BootstrapDiscovery(
-        resolve(projectRoot, ".bootstrap")
-    );
+    //    
+    const projectRoot = process.cwd();
+    const discovery = new BootstrapDiscovery(resolve(projectRoot, ".bootstrap"));
 
     const bootstrap = await discovery.discover();
 
     //
     // 2. Validate and ingest the Xibo module definition
     //
+    const metadataValidator = new MetadataValidator(bootstrap.metadata);
+
+    const issues = metadataValidator.validate();
+    
+    if (issues.length > 0) {
+        throw new BuildValidationError(issues);
+    }
+
     // const ingestor = new ModuleIngestor(projectRoot);
     // const moduleDefinition = await ingestor.ingest(bootstrap);
 
@@ -59,4 +63,12 @@ export async function runBuildCommand(): Promise<void> {
 
     console.log("Xibo module definition ingested:");
     console.log(bootstrap);
+}
+
+class BuildValidationError extends Error {
+    constructor(
+        public readonly issues: ValidationIssue[]
+    ) {
+        super("Build validation failed.");
+    }
 }

@@ -1,14 +1,4 @@
-export type JsonValue =
-    | string
-    | number
-    | boolean
-    | null
-    | JsonObject
-    | JsonValue[];
-
-export interface JsonObject {
-    [key: string]: JsonValue;
-}
+import { JsonObject, JsonValue } from "../private-types";
 
 export class MetadataMerger {
     merge(
@@ -63,3 +53,5 @@ export class MetadataMerger {
         );
     }
 }
+
+export { JsonObject, JsonValue }

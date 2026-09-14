@@ -1,26 +1,11 @@
 import "tsx/esm";
-
-import {
-    readdir,
-    readFile
-} from "node:fs/promises";
-
-import {
-    extname,
-    resolve
-} from "node:path";
-
+import { readdir, readFile } from "node:fs/promises";
+import { extname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import {
-    XiboModule,
-    XiboModuleTemplate
-} from "xibo-modules";
+import { XiboModule, XiboModuleTemplate } from "xibo-modules";
 
-import {
-    JsonObject,
-    MetadataMerger
-} from "./metadata-merger.js";
+import { JsonObject, MetadataMerger } from "./metadata-merger.js";
 
 export interface BootstrapDiscoveryResult {
     module?: XiboModule;
