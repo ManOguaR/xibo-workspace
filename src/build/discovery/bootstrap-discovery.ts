@@ -4,15 +4,10 @@ import { extname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { XiboModule, XiboModuleTemplate } from "xibo-modules";
+import { BootstrapDiscoveryResult } from "../private-types.js";
 
 import { JsonObject, MetadataMerger } from "./metadata-merger.js";
 
-export interface BootstrapDiscoveryResult {
-    module?: XiboModule;
-    templates: XiboModuleTemplate[];
-    metadata: JsonObject;
-    datatype?: unknown;
-}
 
 interface PackageJson {
     xibo?: JsonObject;
@@ -29,7 +24,8 @@ export class BootstrapDiscovery {
     async discover(): Promise<BootstrapDiscoveryResult> {
         const result: BootstrapDiscoveryResult = {
             templates: [],
-            metadata: {}
+            metadata: {},
+            issues: []
         };
 
         await this.discoverDirectory(
@@ -39,9 +35,7 @@ export class BootstrapDiscovery {
 
         const packageJson = await this.readPackageJson();
 
-        const metadataMerger = new MetadataMerger();
-
-        result.metadata = metadataMerger.merge(
+        result.metadata = new MetadataMerger().merge(
             packageJson.xibo,
             result.metadata
         );

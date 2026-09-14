@@ -1,3 +1,5 @@
+import { XiboModule, XiboModuleTemplate } from "xibo-modules";
+
 export type JsonValue =
     | string
     | number
@@ -15,3 +17,12 @@ export interface ValidationIssue {
     message: string;
     path?: string;
 }
+
+export interface BootstrapDiscoveryResult {
+    module?: XiboModule;
+    templates: XiboModuleTemplate[];
+    metadata: JsonObject;
+    datatype?: unknown;
+    issues: ValidationIssue[];
+}
+

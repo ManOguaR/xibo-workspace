@@ -1,5 +1,5 @@
 import { resolve } from "node:path";
-import { BootstrapDiscovery, MetadataValidator, ValidationIssue, MetadataValidationStage } from "../build/xibo-build.js";
+import { BootstrapDiscovery, BootstrapValidator, ValidationIssue } from "../build/xibo-build.js";
 
 export async function runBuildCommand(): Promise<void> {
     //
@@ -13,12 +13,10 @@ export async function runBuildCommand(): Promise<void> {
     //
     // 2. Validate and ingest the Xibo module definition
     //
-    const metadataValidator = new MetadataValidator();
-
-    const issues = metadataValidator.validate(bootstrap.metadata, MetadataValidationStage.Discovery);
+    const bootstrapValidator = new BootstrapValidator();
     
-    if (issues.length > 0) {
-        throw new BuildValidationError(issues);
+    if (!bootstrapValidator.validate(bootstrap)) {
+        throw new BuildValidationError(bootstrap.issues);
     }
 
 

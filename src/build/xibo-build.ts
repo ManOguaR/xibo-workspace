@@ -6,6 +6,4 @@ export * from "./modules/datatype-generator.js";
 
 export * from "./templates/template-generator.js";
 
-export * from "./validation/metadata-validator.js";
-export * from "./validation/module-validator.js";
-export * from "./validation/template-validator.js";
+export * from "./validation/bootstrap-validator.js";
