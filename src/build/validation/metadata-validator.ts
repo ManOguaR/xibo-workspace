@@ -1,4 +1,4 @@
-import type { JsonObject, JsonValue, ValidationIssue } from "../private-types";
+import { ValidationSeverity, type JsonObject, type JsonValue, type ValidationIssue } from "../private-types";
 
 export class MetadataValidator {
 
@@ -55,6 +55,7 @@ export class MetadataValidator {
 
                 if (value === undefined) {
                     issues.push({
+                        severity: ValidationSeverity.Error,
                         code: "metadata.id.required",
                         path: "id",
                         message: "Module id is required."
@@ -65,6 +66,7 @@ export class MetadataValidator {
 
                 if (typeof value !== "string") {
                     issues.push({
+                        severity: ValidationSeverity.Error,
                         code: "metadata.id.invalid-type",
                         path: "id",
                         message: "Module id must be a string."
@@ -75,6 +77,7 @@ export class MetadataValidator {
 
                 if (!this.isValidIdentifier(value)) {
                     issues.push({
+                        severity: ValidationSeverity.Error,
                         code: "metadata.id.invalid-format",
                         path: "id",
                         message: "Module id must contain only lowercase letters, numbers and hyphens."
@@ -106,6 +109,7 @@ export class MetadataValidator {
 
                 if (value === undefined) {
                     issues.push({
+                        severity: ValidationSeverity.Error,
                         code: "metadata.name.required",
                         path: "name",
                         message: "Module name is required."
@@ -116,6 +120,7 @@ export class MetadataValidator {
 
                 if (typeof value !== "string") {
                     issues.push({
+                        severity: ValidationSeverity.Error,
                         code: "metadata.name.invalid-type",
                         path: "name",
                         message: "Module name must be a string."
@@ -126,6 +131,7 @@ export class MetadataValidator {
 
                 if (value.trim().length === 0) {
                     issues.push({
+                        severity: ValidationSeverity.Error,
                         code: "metadata.name.invalid-value",
                         path: "name",
                         message: "Module name cannot be empty."
@@ -555,7 +561,7 @@ export class MetadataValidator {
             if (MetadataValidator.ModuleMetadataProperties.has(property)) {
                 continue;
             }
-            
+
             this.validateTemplate(property, value, stage, issues);
         }
     }
@@ -571,7 +577,7 @@ export class MetadataValidator {
                 this.validateTemplateId(id, issues);
                 this.validateTemplateMetadata(id, value, issues);
                 return;
-                
+
             case MetadataValidationStage.Resolution:
                 // validaciones adicionales
                 return;
@@ -583,13 +589,14 @@ export class MetadataValidator {
                 return;
         }
     }
-    
+
     private validateTemplateId(
         templateId: string,
         issues: ValidationIssue[]
     ): void {
         if (!this.isValidIdentifier(templateId)) {
             issues.push({
+                severity: ValidationSeverity.Error,
                 code: "metadata.template.id.invalid-format",
                 path: templateId,
                 message: `Template id '${templateId}' must contain only lowercase letters, numbers and hyphens.`
@@ -608,6 +615,7 @@ export class MetadataValidator {
             Array.isArray(value)
         ) {
             issues.push({
+                severity: ValidationSeverity.Error,
                 code: "metadata.template.invalid-type",
                 path: templateId,
                 message: `Template metadata '${templateId}' must be an object.`
@@ -629,6 +637,7 @@ export class MetadataValidator {
 
         if (value === undefined) {
             issues.push({
+                severity: ValidationSeverity.Error,
                 code: "metadata.template.name.required",
                 path,
                 message: `Template '${templateId}' name is required.`
@@ -639,6 +648,7 @@ export class MetadataValidator {
 
         if (typeof value !== "string") {
             issues.push({
+                severity: ValidationSeverity.Error,
                 code: "metadata.template.name.invalid-type",
                 path,
                 message: `Template '${templateId}' name must be a string.`
@@ -649,6 +659,7 @@ export class MetadataValidator {
 
         if (value.trim().length === 0) {
             issues.push({
+                severity: ValidationSeverity.Error,
                 code: "metadata.template.name.invalid-value",
                 path,
                 message: `Template '${templateId}' name cannot be empty.`
