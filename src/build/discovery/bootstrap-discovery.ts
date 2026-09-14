@@ -4,7 +4,7 @@ import { extname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { XiboModule, XiboModuleTemplate } from "xibo-modules";
-import { BootstrapValidator, ValidationIssue } from "../validation/bootstrap-validator.js"
+import { BootstrapValidator } from "../validation/bootstrap-validator.js"
 import { BootstrapDiscoveryResult, ValidationSeverity } from "../private-types.js";
 
 import { JsonObject, MetadataMerger } from "./metadata-merger.js";
@@ -40,6 +40,32 @@ export class BootstrapDiscovery {
             this.bootstrapRoot,
             result
         );
+        
+        if (result.module === undefined) {
+            result.issues.push({
+                severity: ValidationSeverity.Critical,
+                code: "bootstrap.module.missing",
+                message: "No XiboModule definition was discovered."
+            });
+            
+            throw new Error(
+                "No XiboModule definition was discovered."
+            );
+        }
+        
+        result.issues.push(
+            ...this.validator.validateIdentity(
+                result.metadata,
+                result.module
+            )
+        );
+        
+        result.issues.push(
+            ...this.validator.validateModuleTemplates(
+                result.metadata,
+                result.templates
+            )
+        );        
 
         return result;
     }
@@ -199,6 +225,18 @@ export class BootstrapDiscovery {
             }
 
             if (instance instanceof XiboModule) {
+                 if (result.module !== undefined) {
+                    result.issues.push({
+                        severity: ValidationSeverity.Critical,
+                        code: "bootstrap.module.multiple",
+                        message: "More than one XiboModule definition was discovered."
+                    });
+                    
+                    throw new Error(
+                        "More than one XiboModule definition was discovered."
+                    );
+                }
+
                 result.module = instance;
                 continue;
             }

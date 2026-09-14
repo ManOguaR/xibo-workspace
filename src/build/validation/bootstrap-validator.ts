@@ -1,4 +1,4 @@
-import { XiboModuleTemplate } from 'xibo-modules';
+import { XiboModule, XiboModuleTemplate } from 'xibo-modules';
 import { JsonObject, JsonValue, ValidationIssue, ValidationSeverity } from "../private-types.js";
 
 export class BootstrapValidator {
@@ -72,24 +72,79 @@ export class BootstrapValidator {
             !Array.isArray(value)
         );
     }
-
+    
     validateIdentity(
-        metadata: JsonObject
+        metadata: JsonObject,
+        module: XiboModule
     ): ValidationIssue[] {
         const issues: ValidationIssue[] = [];
-
-        // reglas de id
-
+        
+        const name = metadata["name"];
+        
+        if (
+            typeof name === "string" &&
+            module.constructor.name !== name
+        ) {
+            issues.push({
+                severity: ValidationSeverity.Warning,
+                code: "bootstrap.module.name-mismatch",
+                path: "name",
+                message:
+                    `Module class '${module.constructor.name}' ` +
+                    `does not match metadata name '${name}'.`
+            });
+        }
+        
         return issues;
     }
-
+    
     validateModuleTemplates(
         metadata: JsonObject,
         templates: XiboModuleTemplate[]
     ): ValidationIssue[] {
         const issues: ValidationIssue[] = [];
+        
+        const definitions = Object.entries(metadata).filter(([key, value]) =>
+                key !== "datatype" &&
+                typeof value === "object" &&
+                value !== null &&
+                !Array.isArray(value));
+                
+        if (definitions.length !== templates.length) {
+            issues.push({
+                severity: ValidationSeverity.Error,
+                code: "bootstrap.templates.count-mismatch",
+                message:
+                    `Discovered ${templates.length} template(s), ` +
+                    `but metadata defines ${definitions.length}.`
+            });
+        }
+        
+        for (const [id] of definitions) {
+            const expectedName = id.split(/[^a-zA-Z0-9]+/)
+                .filter(Boolean)
+                .map(part =>
+                    part.charAt(0).toUpperCase() +
+                    part.slice(1)
+                )
+                .join("");
 
-        // metadata requerida para ese template concreto
+            const template = templates.find(
+                candidate =>
+                    candidate.constructor.name === expectedName
+            );
+
+            if (template === undefined) {
+                issues.push({
+                    severity: ValidationSeverity.Warning,
+                    code: "bootstrap.template.name-mismatch",
+                    path: id,
+                    message:
+                        `Template '${id}' expects class '${expectedName}', ` +
+                        "but no matching template class was discovered."
+                });
+            }
+        }
 
         return issues;
     }

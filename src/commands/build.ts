@@ -1,5 +1,5 @@
 import { resolve } from "node:path";
-import { BootstrapDiscovery, BootstrapValidator, ValidationIssue } from "../build/xibo-build.js";
+import { BootstrapDiscovery, ValidationIssue } from "../build/xibo-build.js";
 
 export async function runBuildCommand(): Promise<void> {
     //
@@ -13,7 +13,7 @@ export async function runBuildCommand(): Promise<void> {
     if (bootstrap.hasErrors()) {
         throw new BuildValidationError(bootstrap.issues);
     }
-    
+
     //
     // 2. Validate and ingest the Xibo module definition
     //

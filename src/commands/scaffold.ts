@@ -269,6 +269,30 @@ export async function runAddCommand(
         )
     );
 
+    const packageJsonPath = resolve(
+        process.cwd(),
+        "package.json"
+    );
+
+    const packageJson = JSON.parse(
+        await readFile(
+            packageJsonPath,
+            "utf8"
+        )
+    );
+
+    packageJson.xibo ??= {};
+    packageJson.xibo[name] = {};
+
+    await writeFile(
+        packageJsonPath,
+        JSON.stringify(
+            packageJson,
+            null,
+            2
+        ) + "\n"
+    );
+    
     console.log(
         `Added '${template}' '${typeName}' at ${targetFile}`
     );
