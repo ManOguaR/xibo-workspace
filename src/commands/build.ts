@@ -117,7 +117,7 @@ async function emitXiboModule(
     //
     const modulePath = resolve(
         output,
-        `${definition.id}.xml`
+        `${definition.type.toLowerCase()}.xml`
     );
 
     await writeFile(
