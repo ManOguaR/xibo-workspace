@@ -17,7 +17,11 @@ export class DevServer {
         const server = await createServer({
             root: this.options.root,
             configFile: false,
-            mode: "development"
+            mode: "development",
+            server: {
+                port: 9696,
+                strictPort: true
+            }
         });
 
         await server.listen();
