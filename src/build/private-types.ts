@@ -39,5 +39,20 @@ export class BootstrapDiscoveryResult {
                 issue.severity === ValidationSeverity.Critical
         );
     };
-}
 
+    log() {
+        if (this.issues.length > 0) {
+            for (const issue of this.issues) {
+                console.log(
+                    `[${ValidationSeverity[issue.severity]}] ` +
+                    `${issue.code}` +
+                    `${issue.path ? ` (${issue.path})` : ""}: ` +
+                    issue.message
+                );
+            }
+        }
+        else {
+            console.log("Bootstrap validation successful.");
+        }
+    }
+}

@@ -13,22 +13,13 @@ export async function runBuildCommand(): Promise<void> {
     if (bootstrap.hasErrors()) {
         throw new BuildValidationError(bootstrap.issues);
     }
-    if (bootstrap.issues.length == 0) {
-        console.log("Some output");
-        // print issues
-    }
-    else {
-        console.log("Some successful output");
-    }
-
+    bootstrap.log();
+    
+    //
+    // 2. Prepare and build the Xibo module definition
+    //
     const builder = new XiboModuleDefinitionBuilder();
-    const definition = builder.addBootstrap(bootstrap).build();
-
-    //
-    // 2. Validate and ingest the Xibo module definition
-    //
-    // const ingestor = new ModuleIngestor(projectRoot);
-    // const moduleDefinition = await ingestor.ingest(bootstrap);
+    const moduleDefinition = builder.addBootstrap(bootstrap).build();
 
     //
     // 3. Compile non-bootstrap project sources
@@ -68,7 +59,7 @@ export async function runBuildCommand(): Promise<void> {
     // await packageModule(...);
 
     console.log("Xibo module definition ingested:");
-    console.log(definition);
+    console.log(moduleDefinition);
 }
 
 export class BuildValidationError extends Error {
