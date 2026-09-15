@@ -34,7 +34,8 @@ export async function runBuildCommand(): Promise<void> {
             configFile: false,
             input: app.entrypoint,
             build: {
-                write: false
+                outDir: ".xibo/dist",
+                emptyOutDir: true
             }
         });
     }

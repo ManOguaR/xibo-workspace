@@ -34,8 +34,12 @@ switch (command) {
         break;
         
     case "run":
-        await runRunCommand();
-        break;
+        if (!await isBuildValid()) {
+            await runBuildCommand();
+        }
+
+    await runRunCommand(args);
+    break;
 
     case "app":
         await runAppCommand(args);
@@ -44,4 +48,8 @@ switch (command) {
     default:
         await printUsage();
         process.exit(1);
+}
+
+async function isBuildValid(): Promise<boolean> {
+    return true;
 }
