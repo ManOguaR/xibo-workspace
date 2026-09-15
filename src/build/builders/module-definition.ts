@@ -8,6 +8,8 @@ export class XiboModuleDefinition {
 
     public datatypeDefinition?: XiboDatatypeDefinition;
 
+    public companionAppDefinition?: CompanionAppDefinition;
+    
     public constructor(
         id: string,
         name: string) {
@@ -33,6 +35,15 @@ export class XiboDatatypeDefinition {
     public constructor(
         public id: string,
         public name: string
+    ) {
+    }
+
+}
+
+export class CompanionAppDefinition {
+
+    public constructor(
+        public entrypoint: string
     ) {
     }
 

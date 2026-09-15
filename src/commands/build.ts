@@ -1,4 +1,5 @@
 import { resolve } from "node:path";
+import { build as viteBuild } from "vite";
 import { BootstrapDiscovery, ValidationIssue, XiboModuleDefinitionBuilder } from "../build/xibo-build.js";
 
 export async function runBuildCommand(): Promise<void> {
@@ -24,8 +25,20 @@ export async function runBuildCommand(): Promise<void> {
     //
     // 3. Compile non-bootstrap project sources
     //
-    // const compilation = await compileProjectSources(...);
+    let compilation;
 
+    const app = moduleDefinition.companionAppDefinition;
+    if (app !== undefined) {
+        compilation = await viteBuild({
+            root: projectRoot,
+            configFile: false,
+            input: app.entrypoint,
+            build: {
+                write: false
+            }
+        });
+    }
+    
     //
     // 4. Run build transformations / user tasks
     //

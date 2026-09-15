@@ -3,7 +3,7 @@ import { XiboModule, XiboModuleTemplate } from "xibo-modules";
 
 import { BootstrapDiscoveryResult, JsonObject } from "../private-types.js";
 
-import { XiboModuleDefinition, XiboModuleTemplateDefinition, XiboDatatypeDefinition } from './module-definition.js';
+import { CompanionAppDefinition, XiboModuleDefinition, XiboModuleTemplateDefinition, XiboDatatypeDefinition } from './module-definition.js';
 
 export class XiboModuleDefinitionBuilder {
     private moduleDefinition?: XiboModuleDefinition;
@@ -67,6 +67,11 @@ export class XiboModuleDefinitionBuilder {
             this.addDatatype(datatype);
         }
         
+        const vite = bootstrap.metadata["vite"];
+        if (typeof vite === "string") {
+            this.addApplication(vite);
+        }
+        
         return this;
     }
 
@@ -93,7 +98,8 @@ export class XiboModuleDefinitionBuilder {
             id,
             name
         );
-        Object.assign(
+
+        this.assignMetadata(
             definition,
             metadata
         );
@@ -130,7 +136,7 @@ export class XiboModuleDefinitionBuilder {
             name
         );
         
-        Object.assign(
+        this.assignMetadata(
             definition,
             templateMetadata
         );
@@ -168,12 +174,29 @@ export class XiboModuleDefinitionBuilder {
             name
         );
         
-        Object.assign(
+        this.assignMetadata(
             definition,
             datatypeMetadata
         );
         
         moduleDefinition.datatypeDefinition = definition;        
+        return this;
+    }
+
+    public addApplication(
+        entrypoint: string
+    ): XiboModuleDefinitionBuilder {
+        const moduleDefinition = this.ensureModule();
+        
+        if (moduleDefinition.companionAppDefinition !== undefined) {
+            throw new Error("A companion application has already been added.");
+        }
+        
+        moduleDefinition.companionAppDefinition =
+            new CompanionAppDefinition(
+                entrypoint
+        );
+        
         return this;
     }
 
@@ -220,6 +243,17 @@ export class XiboModuleDefinitionBuilder {
             id: key,
             metadata: value
         };
+    }
+
+    private assignMetadata(
+        target: object,
+        metadata: JsonObject
+    ): void {
+        for (const [key, value] of Object.entries(metadata)) {
+            if (key in target) {
+                (target as Record<string, unknown>)[key] = value;
+            }
+        }
     }
 
     private ensureModule(): XiboModuleDefinition  {
