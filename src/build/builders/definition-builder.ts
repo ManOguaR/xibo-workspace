@@ -133,7 +133,8 @@ export class XiboModuleDefinitionBuilder {
         
         const definition = new XiboModuleTemplateDefinition(
             id,
-            name
+            name,
+            template.type
         );
         
         this.assignMetadata(

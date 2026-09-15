@@ -1,6 +1,15 @@
+import { mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { build as viteBuild } from "vite";
-import { BootstrapDiscovery, ValidationIssue, XiboModuleDefinitionBuilder } from "../build/xibo-build.js";
+import { 
+    BootstrapDiscovery, 
+    JsonObject,
+    ValidationIssue, 
+    XiboModuleDefinition, 
+    XiboModuleDefinitionBuilder, 
+    XiboModuleXmlGenerator, 
+    XiboModuleTemplateXmlGenerator,
+    XiboDatatypeXmlGenerator } from "../build/xibo-build.js";
 
 export async function runBuildCommand(): Promise<void> {
     //
@@ -39,7 +48,9 @@ export async function runBuildCommand(): Promise<void> {
             }
         });
     }
+
     
+
     //
     // 4. Run build transformations / user tasks
     //
@@ -63,17 +74,114 @@ export async function runBuildCommand(): Promise<void> {
     //
     // n-1. Emit Xibo definitions
     //
-    // await emitModuleXml(moduleDefinition, resources);
-    // await emitTemplateXml(...);
-    // await emitDataTypeXml(...);
+    const manifest = await emitXiboModule(moduleDefinition);
 
     //
     // n. Package final Xibo module
     //
-    // await packageModule(...);
+    await packageModule(manifest);
 
     console.log("Xibo module definition ingested:");
     console.log(moduleDefinition);
+}
+
+async function emitXiboModule(
+    definition: XiboModuleDefinition,
+    output: string = resolve(process.cwd(), ".xibo")
+): Promise<JsonObject> {
+    await mkdir(output, {
+        recursive: true
+    });
+
+    const manifest: JsonObject = {};
+
+    //
+    // Module
+    //
+    const modulePath = resolve(
+        output,
+        `${definition.id}.xml`
+    );
+
+    await writeFile(
+        modulePath,
+        new XiboModuleXmlGenerator()
+            .generate(definition),
+        "utf8"
+    );
+
+    manifest["module"] = modulePath;
+
+    //
+    // Datatype
+    //
+    const datatype = definition.datatypeDefinition;
+
+    if (datatype !== undefined) {
+        const datatypePath = resolve(
+            output,
+            `${datatype.id}.xml`
+        );
+
+        await writeFile(
+            datatypePath,
+            new XiboDatatypeXmlGenerator()
+                .generate(datatype),
+            "utf8"
+        );
+
+        manifest["datatype"] = datatypePath;
+    }
+
+    //
+    // Templates
+    //
+    if (definition.templateDefinitions.length > 0) {
+        if (datatype === undefined) {
+            throw new Error(
+                `Module '${definition.id}' defines templates but has no datatype.`
+            );
+        }
+
+        const templatesPath = resolve(
+            output,
+            "templates.xml"
+        );
+
+        await writeFile(
+            templatesPath,
+            new XiboModuleTemplateXmlGenerator()
+                .generate(
+                    definition.templateDefinitions,
+                    datatype.id
+                ),
+            "utf8"
+        );
+
+        manifest["templates"] = templatesPath;
+    }
+
+    //
+    // Manifest
+    //
+    await writeFile(
+        resolve(output, "manifest.json"),
+        JSON.stringify(
+            manifest,
+            null,
+            2
+        ),
+        "utf8"
+    );
+
+    return manifest;
+}
+
+async function packageModule(
+    manifest: JsonObject, 
+    output: string = resolve(process.cwd(), ".xibo")
+) {
+    
 }
 
 export class BuildValidationError extends Error {
@@ -83,3 +191,5 @@ export class BuildValidationError extends Error {
         super("Build validation failed.");
     }
 }
+
+

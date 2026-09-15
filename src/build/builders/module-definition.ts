@@ -1,9 +1,7 @@
 import { JsonObject } from "../private-types.js";
+import { XiboModuleTemplateType } from "../../xibo/XiboModuleTemplate.js";
 
 export class XiboModuleDefinition {
-    public id: string;
-    public name: string;
-
     public templateDefinitions: XiboModuleTemplateDefinition[] = [];
 
     public datatypeDefinition?: XiboDatatypeDefinition;
@@ -11,22 +9,17 @@ export class XiboModuleDefinition {
     public companionAppDefinition?: CompanionAppDefinition;
     
     public constructor(
-        id: string,
-        name: string) {
-            this.id = id;
-            this.name = name;
+        public id: string,
+        public name: string) {
     }
 }
 
 export class XiboModuleTemplateDefinition {
-    public id: string;
-    public name: string;
-
+    public datatypeId? : string;
     public constructor(
-        id: string,
-        name: string) {
-            this.id = id;
-            this.name = name;
+        public id: string,
+        public name: string,
+        public type: XiboModuleTemplateType) {
     }
 }
 
