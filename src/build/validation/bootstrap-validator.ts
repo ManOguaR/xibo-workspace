@@ -78,12 +78,20 @@ export class BootstrapValidator {
         templates: XiboModuleTemplate[]
     ): ValidationIssue[] {
         const issues: ValidationIssue[] = [];
+
+        const moduleObjectMetadata = new Set([
+            "datatype",
+            "group",
+            "initialSize"
+        ]);
         
-        const definitions = Object.entries(metadata).filter(([key, value]) =>
-                key !== "datatype" &&
+        const definitions = Object.entries(metadata).filter(
+            ([key, value]) =>
+                !moduleObjectMetadata.has(key) &&
                 typeof value === "object" &&
                 value !== null &&
-                !Array.isArray(value));
+                !Array.isArray(value)
+        );
                 
         if (definitions.length !== templates.length) {
             issues.push({
