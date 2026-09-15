@@ -1,5 +1,5 @@
 import { resolve } from "node:path";
-import { BootstrapDiscovery, ValidationIssue } from "../build/xibo-build.js";
+import { BootstrapDiscovery, ValidationIssue, XiboModuleDefinitionBuilder } from "../build/xibo-build.js";
 
 export async function runBuildCommand(): Promise<void> {
     //
@@ -13,6 +13,16 @@ export async function runBuildCommand(): Promise<void> {
     if (bootstrap.hasErrors()) {
         throw new BuildValidationError(bootstrap.issues);
     }
+    if (bootstrap.issues.length == 0) {
+        console.log("Some output");
+        // print issues
+    }
+    else {
+        console.log("Some successful output");
+    }
+
+    const builder = new XiboModuleDefinitionBuilder();
+    const definition = builder.addBootstrap(bootstrap).build();
 
     //
     // 2. Validate and ingest the Xibo module definition
@@ -58,7 +68,7 @@ export async function runBuildCommand(): Promise<void> {
     // await packageModule(...);
 
     console.log("Xibo module definition ingested:");
-    console.log(bootstrap);
+    console.log(definition);
 }
 
 export class BuildValidationError extends Error {
