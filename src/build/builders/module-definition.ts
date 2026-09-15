@@ -2,6 +2,9 @@ import { JsonObject } from "../private-types.js";
 import { XiboModuleTemplateType } from "../../xibo/XiboModuleTemplate.js";
 
 export class XiboModuleDefinition {
+    public author: string = "";
+    public description: string = "";
+
     public templateDefinitions: XiboModuleTemplateDefinition[] = [];
 
     public datatypeDefinition?: XiboDatatypeDefinition;
@@ -10,7 +13,8 @@ export class XiboModuleDefinition {
     
     public constructor(
         public id: string,
-        public name: string) {
+        public name: string,
+        public type: string) {
     }
 }
 

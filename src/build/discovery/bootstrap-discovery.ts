@@ -10,6 +10,8 @@ import { BootstrapDiscoveryResult, ValidationSeverity } from "../private-types.j
 import { JsonObject, MetadataMerger } from "./metadata-merger.js";
 
 interface PackageJson {
+    author?: string;
+    description?: string;
     xibo?: JsonObject;
 }
 
@@ -29,10 +31,19 @@ export class BootstrapDiscovery {
 
     async discover(): Promise<BootstrapDiscoveryResult> {
         const result: BootstrapDiscoveryResult = new BootstrapDiscoveryResult();
-
+        
         const packageJson = await this.readPackageJson();
-
+        
         result.metadata = this.merger.merge(
+            {
+                ...(packageJson.author !== undefined
+                    ? { author: packageJson.author }
+                    : {}),
+                    
+                ...(packageJson.description !== undefined
+                    ? { description: packageJson.description }
+                    : {})
+            },
             packageJson.xibo
         );
 
@@ -53,12 +64,12 @@ export class BootstrapDiscovery {
             );
         }
         
-        result.issues.push(
-            ...this.validator.validateIdentity(
-                result.metadata,
-                result.module
-            )
-        );
+        // result.issues.push(
+        //     ...this.validator.validateIdentity(
+        //         result.metadata,
+        //         result.module
+        //     )
+        // );
         
         result.issues.push(
             ...this.validator.validateModuleTemplates(

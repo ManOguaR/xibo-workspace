@@ -1,6 +1,7 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { build as viteBuild } from "vite";
+
 import { 
     BootstrapDiscovery, 
     JsonObject,
@@ -12,10 +13,21 @@ import {
     XiboDatatypeXmlGenerator } from "../build/xibo-build.js";
 
 export async function runBuildCommand(): Promise<void> {
+    const projectRoot = process.cwd();
+
+    const packageJsonPath = resolve(projectRoot, "package.json");
+
+    const packageJson = JSON.parse(
+        await readFile(packageJsonPath, "utf8")) as { name?: string; };
+
+    if (typeof packageJson.name !== "string" || packageJson.name.length === 0) {
+        throw new Error("Package name is required.");
+    }
+    const packageName = normalizePackageName(packageJson.name);
+
     //
     // 1. Discover bootstrap definition sources
     //    
-    const projectRoot = process.cwd();
     const discovery = new BootstrapDiscovery(resolve(projectRoot, ".bootstrap"));
 
     const bootstrap = await discovery.discover();
@@ -44,21 +56,26 @@ export async function runBuildCommand(): Promise<void> {
             input: app.entrypoint,
             build: {
                 outDir: ".xibo/dist",
-                emptyOutDir: true
-            }
+                emptyOutDir: true,
+                rolldownOptions: {
+                    output: {
+                        codeSplitting: false,
+                        entryFileNames: `${packageName}.min.js`
+                    }
+                }
+            }            
         });
     }
-
-    
 
     //
     // 4. Run build transformations / user tasks
     //
-    // const transformed = await runBuildTasks(...);
-
-    //
-    // ...
-    //
+    if (compilation !== undefined) {
+        // TODO: identify Vite entry output as Xibo asset
+        // TODO: emit development asset: <appname>.js
+        // TODO: minify development asset
+        // TODO: emit production asset: <appname>.min.js
+    }
 
     //
     // n-2. Collect final module resources
@@ -192,4 +209,15 @@ export class BuildValidationError extends Error {
     }
 }
 
+function normalizePackageName(
+    name: string
+): string {
+    const packageName = name.includes("/")
+        ? name.substring(name.lastIndexOf("/") + 1)
+        : name;
 
+    return packageName
+        .replace(/[^a-zA-Z0-9._-]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .toLowerCase();
+}

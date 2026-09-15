@@ -73,38 +73,38 @@ export class BootstrapValidator {
         );
     }
     
-    validateIdentity(
-        metadata: JsonObject,
-        module: XiboModule
-    ): ValidationIssue[] {
-        const issues: ValidationIssue[] = [];
+    // validateIdentity(
+    //     metadata: JsonObject,
+    //     module: XiboModule
+    // ): ValidationIssue[] {
+    //     const issues: ValidationIssue[] = [];
         
-        const id = metadata["id"];
+    //     const id = metadata["id"];
 
-        if (typeof id === "string") {
-            const expectedName = id
-                .split(/[^a-zA-Z0-9]+/)
-                .filter(Boolean)
-                .map(part =>
-                    part.charAt(0).toUpperCase() +
-                    part.slice(1)
-                )
-                .join("");
+    //     if (typeof id === "string") {
+    //         const expectedName = id
+    //             .split(/[^a-zA-Z0-9]+/)
+    //             .filter(Boolean)
+    //             .map(part =>
+    //                 part.charAt(0).toUpperCase() +
+    //                 part.slice(1)
+    //             )
+    //             .join("");
 
-            if (module.constructor.name !== expectedName) {
-                issues.push({
-                    severity: ValidationSeverity.Warning,
-                    code: "bootstrap.module.name-mismatch",
-                    path: "id",
-                    message:
-                        `Module '${id}' expects class '${expectedName}', ` +
-                        `but '${module.constructor.name}' was discovered.`
-                });
-            }
-        }
+    //         if (module.constructor.name !== expectedName) {
+    //             issues.push({
+    //                 severity: ValidationSeverity.Warning,
+    //                 code: "bootstrap.module.name-mismatch",
+    //                 path: "id",
+    //                 message:
+    //                     `Module '${id}' expects class '${expectedName}', ` +
+    //                     `but '${module.constructor.name}' was discovered.`
+    //             });
+    //         }
+    //     }
 
-        return issues;
-    }
+    //     return issues;
+    // }
     
     validateModuleTemplates(
         metadata: JsonObject,

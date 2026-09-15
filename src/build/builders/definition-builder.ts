@@ -96,7 +96,8 @@ export class XiboModuleDefinitionBuilder {
         
         const definition = new XiboModuleDefinition(
             id,
-            name
+            name,
+            this.getModuleType(module)
         );
 
         this.assignMetadata(
@@ -302,6 +303,14 @@ export class XiboModuleDefinitionBuilder {
                 part.slice(1)
             )
             .join("");
+    }
+
+    private getModuleType(
+        module: XiboModule
+    ): string {
+        return module.constructor.name
+            .replace(/Module$/, "")
+            .toLowerCase();
     }
 }
 
