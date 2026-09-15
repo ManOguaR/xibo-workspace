@@ -22,7 +22,9 @@ export async function runAppCommand(
 
     switch (args[0]) {
         case "add":
-            await runAppAddCommand();
+            await addCompanionApp(
+                process.cwd()
+            );
             break;
 
         case "build":
@@ -35,9 +37,9 @@ export async function runAppCommand(
     }
 }
 
-async function runAppAddCommand(): Promise<void> {
-    const projectRoot = process.cwd();
-
+export async function addCompanionApp(
+    projectRoot: string
+): Promise<void> {
     const packageJsonPath = resolve(
         projectRoot,
         "package.json"
@@ -72,7 +74,11 @@ async function runAppAddCommand(): Promise<void> {
         throw new Error("Companion application entrypoint 'src/main.ts' already exists.");
     }
     catch (error) {
-        if (error instanceof Error && error.message === "Companion application entrypoint 'src/main.ts' already exists.") {
+        if (
+            error instanceof Error &&
+            error.message ===
+                "Companion application entrypoint 'src/main.ts' already exists."
+        ) {
             throw error;
         }
     }

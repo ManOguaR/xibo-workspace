@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>Xibo Open Source Digital Signage</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=[[ViewPortWidth]]" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <!-- Copyright 2006-{{ 'now' | date('Y') }} Xibo Signage Ltd. Part of the Xibo Open Source Digital Signage Solution. Released under the AGPLv3 or later. -->
+        <script type="text/javascript" src="[[PlayerBundle]]"></script>
+        <link href="[[FontBundle]]" rel="stylesheet">
+        {% for item in head %}
+            {{ item|raw }}
+        {% endfor %}
+        <style type="text/css">
+            body {
+                margin: 0;
+                overflow: hidden;
+                font-family: sans-serif, Arial, Verdana, "Trebuchet MS";
+            }
+            h1, h2, h3, h4, p {
+                margin-top: 0;
+            }
+            #iframe {
+                border: 0;
+            }
+            .cycle-slide p, p.cycle-slide {
+                margin-bottom:0;
+            }
+        </style>
+        {% if style|length > 0 %}
+            {% for item in style %}
+                <style type="text/css" data-style-target="{{item.type}}" data-style-scope="{{item.type}}_{{item.dataType}}__{{item.templateId}}">
+                    {{ item.content|raw }}
+                </style>
+            {% endfor %}
+        {% endif %}
+    </head>
+    <body>
+        <div id="content"></div>
+    {% for item in twig %}
+        {{ item|raw }}
+    {% endfor %}
+    {% for asset in assets %}
+        {% if asset.isAutoInclude() and asset.mimeType == 'text/css' %}
+        <link rel="stylesheet" media="screen" href="[[assetId={{ asset.id }}]]" />
+        {% elseif asset.isAutoInclude() and asset.mimeType == 'text/javascript' %}
+        <script id="{{ asset.id }}" type="text/javascript" src="[[assetId={{ asset.id }}]]"></script>
+        {% endif %}
+    {% endfor %}
+    </body>
+    <script type="text/javascript">
+        var xiboICTargetId = {{ widgetId }};
+        xiboIC.setTargetId(xiboICTargetId);
+        window.globalOptions = {
+          originalWidth: {{ width }},
+          originalHeight: {{ height }},
+          totalDuration: {{ duration }},
+          cmsDateFormat: '{{ cmsDateFormat }}',
+          locale: '{{ locale }}',
+        };
+        var widgetData = [];
+        {% for item in data %}
+        widgetData.push({{ item|json_encode|raw }});
+        {% endfor %}
+
+        var elements = [];
+        {% for item in elements %}
+        elements.push({{ item|raw }});
+        {% endfor %}
+    </script>
+{% for id, item in hbs %}
+    <script type="text/x-handlebars-template" id="hbs-{{ id }}"
+            data-width="{{ item.width }}"
+            data-height="{{ item.height }}"
+            data-gap="{{ item.gapBetweenHbs }}"
+            data-extends-override="{{ item.extends.override }}"
+            data-extends-with="{{ item.extends.with }}"
+            data-escape-html="{{ item.extends.escapeHtml }}"
+    >{{ item.content|raw }}</script>
+{% endfor %}
+{% for widgetId, parser in onInitialize %}
+    <script type="text/javascript" id="onInitialize-{{ widgetId }}">
+        function onInitialize_{{ widgetId }}(id, target, properties, meta) {
+          {{ parser|raw }}
+        }
+    </script>
+{% endfor %}
+{% for widgetId, parser in onParseData %}
+    <script type="text/javascript" id="onParseData-{{ widgetId }}">
+      function onParseData_{{ widgetId }}(item, properties, meta) {
+        {{ parser|raw }}
+      }
+    </script>
+{% endfor %}
+{% for widgetId, parser in onDataLoad %}
+    <script type="text/javascript" id="onDataLoad-{{ widgetId }}">
+      function onDataLoad_{{ widgetId }}(items, meta, properties, isDataReady) {
+        {{ parser|raw }}
+      }
+    </script>
+{% endfor %}
+{% for widgetId, parser in onRender %}
+    <script type="text/javascript" id="onRender-{{ widgetId }}">
+        function onRender_{{ widgetId }}(id, target, items, properties, meta) {
+          {{ parser|raw }}
+        }
+    </script>
+{% endfor %}
+{% for widgetId, parser in onVisible %}
+    <script type="text/javascript" id="onVisible-{{ widgetId }}">
+        function onVisible_{{ widgetId }}(id, target, items, properties, meta) {
+          {{ parser|raw }}
+        }
+    </script>
+{% endfor %}
+{% for templateId, renderer in onTemplateRender %}
+    <script type="text/javascript" id="onTemplateRender-{{ templateId }}">
+        function onTemplateRender_{{ templateId }}(id, target, items, properties, meta) {
+            {{ renderer|raw  }}
+        }
+    </script>
+{% endfor %}
+{% for templateId, renderer in onTemplateVisible %}
+    <script type="text/javascript" id="onTemplateVisible-{{ templateId }}">
+        function onTemplateVisible_{{ templateId }}(id, target, items, properties, meta) {
+            {{ renderer|raw  }}
+        }
+    </script>
+{% endfor %}
+{% for templateId, parser in onElementParseData %}
+    <script type="text/javascript" id="onElementParseData-{{ templateId }}">
+      function onElementParseData_{{ templateId }}(value, properties) {
+          {{ parser|raw  }}
+      }
+    </script>
+{% endfor %}
+    <!-- NUMITEMS={{ numItems }} -->
+    <!-- DURATION={{ duration }} -->
+</html>

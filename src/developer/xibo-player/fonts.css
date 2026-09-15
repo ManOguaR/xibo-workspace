@@ -1,0 +1,17 @@
+@font-face {
+    font-family: "Xibo Mock Sans";
+    src:
+        local("Segoe UI"),
+        local("Arial"),
+        local("DejaVu Sans"),
+        local("Liberation Sans");
+}
+
+@font-face {
+    font-family: "Xibo Mock Mono";
+    src:
+        local("Cascadia Mono"),
+        local("Consolas"),
+        local("DejaVu Sans Mono"),
+        local("Liberation Mono");
+}

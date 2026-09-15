@@ -15,6 +15,10 @@ import {
     fileURLToPath
 } from "node:url";
 
+import {
+    addCompanionApp
+} from "./application.js";
+
 export async function runNewCommand(
     args: string[]
 ): Promise<void> {
@@ -33,11 +37,13 @@ export async function runNewCommand(
     let template: string;
     let name: string;
     let target: string;
+    let companionApp = false;
 
     switch (args.length) {
         case 2:
             [name, target] = args;
             template = "empty";
+            companionApp = true;
             break;
 
         case 3:
@@ -182,6 +188,12 @@ export async function runNewCommand(
             2
         ) + "\n"
     );
+
+    if (companionApp) {
+        await addCompanionApp(
+            targetRoot
+        );
+    }
 
     console.log(
         `Created '${moduleId}' from '${requestedTemplate}' template at ${targetRoot}`
