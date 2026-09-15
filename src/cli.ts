@@ -14,6 +14,10 @@ import {
     runRunCommand 
 } from "./commands/run.js";
 
+import { 
+    runAppCommand 
+} from "./commands/application.js";
+
 const [, , command, ...args] = process.argv;
 
 switch (command) {
@@ -31,6 +35,10 @@ switch (command) {
         
     case "run":
         await runRunCommand();
+        break;
+
+    case "app":
+        await runAppCommand(args);
         break;
 
     default:
