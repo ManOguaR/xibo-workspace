@@ -1,22 +1,307 @@
-import {
-    XiboModuleDefinition
-} from "../builders/module-definition.js";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+import {  HbsSource } from 'xibo-modules';
+
+import { XiboModuleDefinition } from "../xibo-build.js";
 
 export class XiboModuleXmlGenerator {
+
     public generate(
         definition: XiboModuleDefinition
     ): string {
-        const datatype = definition.datatypeDefinition
-            ? `    <dataType>${escapeXml(definition.datatypeDefinition.id)}</dataType>\n`
+
+        const icon = definition.icon
+            ? `\t<icon>${escapeXml(definition.icon)}</icon>\n`
             : "";
+
+        const group = definition.group
+            ? `\t<group id="${escapeXml(definition.group.id)}"${
+                definition.group.icon
+                    ? ` icon="${escapeXml(definition.group.icon)}"`
+                    : ""
+            }>${escapeXml(definition.group.name)}</group>\n`
+            : "";
+
+        const thumbnail = definition.thumbnail
+            ? `\t<thumbnail>${escapeXml(definition.thumbnail)}</thumbnail>\n` +
+              `\t<hasThumbnail>1</hasThumbnail>\n`
+            : "";
+
+        const initialSize = definition.initialSize
+            ? `\t<startWidth>${definition.initialSize.width}</startWidth>\n` +
+              `\t<startHeight>${definition.initialSize.height}</startHeight>\n`
+            : "";
+
+        const allowPreview = !definition.allowPreview
+            ? `\t<allowPreview>0</allowPreview>\n`
+            : "";
+
+        const showIn = definition.showIn !== "both"
+            ? `\t<showIn>${escapeXml(definition.showIn)}</showIn>\n`
+            : "";
+
+        const datatype = definition.datatypeDefinition
+            ? `\t<dataType>${escapeXml(definition.datatypeDefinition.id)}</dataType>\n`
+            : "";
+
+        const cacheKey =
+            definition.datatypeDefinition &&
+            definition.cacheKey
+                ? `\t<dataCacheKey>${escapeXml(definition.cacheKey)}</dataCacheKey>\n`
+                : "";
+
+        const xmlClass = definition.datatypeDefinition
+            ? `\t<class>\\Xibo\\Custom\\${definition.type}\\${definition.type}Provider</class>\n`
+            : "";
+
+        const fallbackData = this.generateFallbackData(definition);
+        const sampleData = this.generateSampleData(definition);
+
+        const settings = this.generateSettings(definition);
+        const properties = this.generateProperties(definition);
+        const propertyGroups = this.generatePropertyGroups(definition);
+        const requiredElements = this.generateRequiredElements(definition);
+
+        const preview = this.generatePreview(definition);
+        const stencil = this.generateStencil(definition);
+        const assets = this.generateAssets(definition);
+
+        const onInitialize = this.generateOnInitialize(definition);
+        const onDataLoad = this.generateOnDataLoad(definition);
+        const onParseData = this.generateOnParseData(definition);
+        const onRender = this.generateOnRender(definition);
+        const onVisible = this.generateOnVisible(definition);
 
         return `<?xml version="1.0" encoding="UTF-8"?>
 
 <module>
-    <id>${escapeXml(definition.id)}</id>
-    <name>${escapeXml(definition.name)}</name>
-${datatype}</module>
+\t<id>${escapeXml(definition.id)}</id>
+\t<name>${escapeXml(definition.name)}</name>
+\t<author>${escapeXml(definition.author)}</author>
+\t<description>${escapeXml(definition.description)}</description>
+
+${icon}${group}${thumbnail}${initialSize}${allowPreview}${showIn}
+${xmlClass}\t<type>${escapeXml(definition.type.toLowerCase())}</type>
+${datatype}${cacheKey}${fallbackData}\t<schemaVersion>${escapeXml(definition.version.split(".", 1)[0])}</schemaVersion>
+
+\t<assignable>1</assignable>
+\t<regionSpecific>1</regionSpecific>
+
+\t<renderAs>html</renderAs>
+\t<defaultDuration>0</defaultDuration>
+
+${settings}
+
+${properties}
+
+${propertyGroups}
+
+${requiredElements}
+
+${preview}
+
+${stencil}
+
+${assets}
+
+${onInitialize}
+
+${onDataLoad}
+
+${onParseData}
+
+${onRender}
+
+${onVisible}
+
+${sampleData}
+
+</module>
 `;
+    }
+
+    private generateFallbackData(
+        _definition: XiboModuleDefinition
+    ): string {
+        return "";
+    }
+
+    private generateSampleData(
+        _definition: XiboModuleDefinition
+    ): string {
+        return "";
+    }
+
+    private generateSettings(
+        _definition: XiboModuleDefinition
+    ): string {
+        return `\t<settings>
+\t</settings>`;
+    }
+
+    private generateProperties(
+        _definition: XiboModuleDefinition
+    ): string {
+        return `\t<properties>
+\t</properties>`;
+    }
+
+    private generatePropertyGroups(
+        _definition: XiboModuleDefinition
+    ): string {
+        return "";
+    }
+
+    private generateRequiredElements(
+        _definition: XiboModuleDefinition
+    ): string {
+        return "";
+    }
+
+    private generatePreview(
+        _definition: XiboModuleDefinition
+    ): string {
+        return `\t<preview></preview>`;
+    }
+
+    private generateStencil(
+        definition: XiboModuleDefinition
+    ): string {
+        const stencil = definition.stencil;
+        
+        if (stencil === undefined) {
+            return "";
+        }
+        
+        const content = readFileSync(
+            resolve(
+                process.cwd(),
+                ".bootstrap",
+                stencil.path
+            ),
+            "utf8"
+        );
+        
+        let source: string;
+        
+        if (stencil instanceof HbsSource) {
+            const id = stencil.id
+                ? ` id="${escapeXml(stencil.id)}"`
+                : "";
+                
+            source = `\t\t<hbs${id}><![CDATA[
+${content}
+\t\t]]></hbs>\n`;
+        }
+        else {
+            source = `\t\t<twig><![CDATA[
+${content}
+\t\t]]></twig>\n`;
+        }
+        
+        const head = stencil.head !== undefined
+            ? `\t\t<head><![CDATA[
+${stencil.head}
+\t\t]]></head>\n`
+            : "";
+
+        const style = stencil.style !== undefined
+            ? `\t\t<style><![CDATA[
+${stencil.style}
+\t\t]]></style>\n`
+            : "";
+
+        const width = stencil.width !== undefined
+            ? `\t\t<width>${stencil.width}</width>\n`
+            : "";
+
+        const height = stencil.height !== undefined
+            ? `\t\t<height>${stencil.height}</height>\n`
+            : "";
+
+        const gapBetweenHbs = stencil.gapBetweenHbs !== undefined
+            ? `\t\t<gapBetweenHbs>${stencil.gapBetweenHbs}</gapBetweenHbs>\n`
+            : "";
+
+        return `\t<stencil>
+${head}${style}${width}${height}${gapBetweenHbs}${source}\t</stencil>`;
+}
+
+    private generateAssets(
+        _definition: XiboModuleDefinition
+    ): string {
+        return "";
+    }
+    
+    private generateOnInitialize(
+        definition: XiboModuleDefinition
+    ): string {
+        const content = definition.onInitialize?.();
+        
+        if (!content) {
+            return "";
+        }
+        
+        return `\t<onInitialize><![CDATA[
+${content}
+\t]]></onInitialize>`;
+    }
+
+    private generateOnDataLoad(
+        definition: XiboModuleDefinition
+    ): string {
+        const content = definition.onDataLoad?.();
+
+        if (!content) {
+            return "";
+        }
+
+        return `\t<onDataLoad><![CDATA[
+${content}
+\t]]></onDataLoad>`;
+    }
+
+    private generateOnParseData(
+        definition: XiboModuleDefinition
+    ): string {
+        const content = definition.onParseData?.();
+
+        if (!content) {
+            return "";
+        }
+
+        return `\t<onParseData><![CDATA[
+${content}
+\t]]></onParseData>`;
+    }
+
+    private generateOnRender(
+        definition: XiboModuleDefinition
+    ): string {
+        const content = definition.onRender?.();
+
+        if (!content) {
+            return "";
+        }
+
+        return `\t<onRender><![CDATA[
+${content}
+\t]]></onRender>`;
+    }
+
+    private generateOnVisible(
+        definition: XiboModuleDefinition
+    ): string {
+        const content = definition.onVisible?.();
+
+        if (!content) {
+            return "";
+        }
+
+        return `\t<onVisible><![CDATA[
+${content}
+\t]]></onVisible>`;
     }
 }
 

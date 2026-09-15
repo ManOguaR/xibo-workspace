@@ -72,40 +72,7 @@ export class BootstrapValidator {
             !Array.isArray(value)
         );
     }
-    
-    // validateIdentity(
-    //     metadata: JsonObject,
-    //     module: XiboModule
-    // ): ValidationIssue[] {
-    //     const issues: ValidationIssue[] = [];
-        
-    //     const id = metadata["id"];
-
-    //     if (typeof id === "string") {
-    //         const expectedName = id
-    //             .split(/[^a-zA-Z0-9]+/)
-    //             .filter(Boolean)
-    //             .map(part =>
-    //                 part.charAt(0).toUpperCase() +
-    //                 part.slice(1)
-    //             )
-    //             .join("");
-
-    //         if (module.constructor.name !== expectedName) {
-    //             issues.push({
-    //                 severity: ValidationSeverity.Warning,
-    //                 code: "bootstrap.module.name-mismatch",
-    //                 path: "id",
-    //                 message:
-    //                     `Module '${id}' expects class '${expectedName}', ` +
-    //                     `but '${module.constructor.name}' was discovered.`
-    //             });
-    //         }
-    //     }
-
-    //     return issues;
-    // }
-    
+ 
     validateModuleTemplates(
         metadata: JsonObject,
         templates: XiboModuleTemplate[]
@@ -154,6 +121,106 @@ export class BootstrapValidator {
             }
         }
 
+        return issues;
+    }
+
+    validateMetadata(
+        metadata: JsonObject
+    ): ValidationIssue[] {
+        const issues: ValidationIssue[] = [];
+        
+        const version = metadata["version"];
+        
+        if (version !== undefined && (typeof version !== "string" || !/^\d+\.\d+\.\d+$/.test(version))) {
+            issues.push({
+                severity: ValidationSeverity.Error,
+                code: "bootstrap.metadata.version-invalid",
+                path: "version",
+                message: "Metadata 'version' must be a semantic version in the form x.y.z."
+            });
+        }
+        
+        const thumbnail = metadata["thumbnail"];
+        
+        if (thumbnail !== undefined && typeof thumbnail !== "string") {
+            issues.push({
+                severity: ValidationSeverity.Error,
+                code: "bootstrap.metadata.thumbnail-invalid",
+                path: "thumbnail",
+                message: "Metadata 'thumbnail' must be a string."
+            });
+        }
+        
+        const initialSize = metadata["initialSize"];
+
+        if (initialSize !== undefined) {
+            if (!this.isObject(initialSize)) {
+                issues.push({
+                    severity: ValidationSeverity.Error,
+                    code: "bootstrap.metadata.initial-size-invalid",
+                    path: "initialSize",
+                    message: "Metadata 'initialSize' must be an object."
+                });
+            }
+            else {
+                const width = initialSize["width"];
+                const height = initialSize["height"];
+
+                if (typeof width !== "number" ||
+                    !Number.isFinite(width) ||
+                    width <= 0) {
+                    issues.push({
+                        severity: ValidationSeverity.Error,
+                        code: "bootstrap.metadata.initial-size-width-invalid",
+                        path: "initialSize.width",
+                        message: "Metadata 'initialSize.width' must be a positive number."
+                    });
+                }
+                
+                if (typeof height !== "number" || !Number.isFinite(height) || height <= 0) {
+                    issues.push({
+                        severity: ValidationSeverity.Error,
+                        code: "bootstrap.metadata.initial-size-height-invalid",
+                        path: "initialSize.height",
+                        message: "Metadata 'initialSize.height' must be a positive number."
+                    });
+                }
+            }
+        }
+        
+        const allowPreview = metadata["allowPreview"];
+        
+        if (allowPreview !== undefined && typeof allowPreview !== "boolean") {
+            issues.push({
+                severity: ValidationSeverity.Error,
+                code: "bootstrap.metadata.allow-preview-invalid",
+                path: "allowPreview",
+                message: "Metadata 'allowPreview' must be a boolean."
+            });
+        }
+        
+        const showIn = metadata["showIn"];
+        
+        if (showIn !== undefined && (typeof showIn !== "string" || !["none", "layout", "playlist", "both"].includes(showIn))) {
+            issues.push({
+                severity: ValidationSeverity.Error,
+                code: "bootstrap.metadata.show-in-invalid",
+                path: "showIn",
+                message: "Metadata 'showIn' must be one of: none, layout, playlist, both."
+            });
+        }
+        
+        const cacheKey = metadata["cacheKey"];
+        
+        if (cacheKey !== undefined && typeof cacheKey !== "string") {
+            issues.push({
+                severity: ValidationSeverity.Error,
+                code: "bootstrap.metadata.cache-key-invalid",
+                path: "cacheKey",
+                message: "Metadata 'cacheKey' must be a string."
+            });
+        }
+        
         return issues;
     }
 }

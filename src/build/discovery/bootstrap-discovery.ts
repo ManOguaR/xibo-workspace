@@ -10,6 +10,7 @@ import { BootstrapDiscoveryResult, ValidationSeverity } from "../private-types.j
 import { JsonObject, MetadataMerger } from "./metadata-merger.js";
 
 interface PackageJson {
+    version?: string;
     author?: string;
     description?: string;
     xibo?: JsonObject;
@@ -36,6 +37,10 @@ export class BootstrapDiscovery {
         
         result.metadata = this.merger.merge(
             {
+                ...(packageJson.version !== undefined
+                    ? { version: packageJson.version }
+                    : {}),
+                    
                 ...(packageJson.author !== undefined
                     ? { author: packageJson.author }
                     : {}),
@@ -59,17 +64,14 @@ export class BootstrapDiscovery {
                 message: "No XiboModule definition was discovered."
             });
             
-            throw new Error(
-                "No XiboModule definition was discovered."
-            );
+            throw new Error("No XiboModule definition was discovered.");
         }
         
-        // result.issues.push(
-        //     ...this.validator.validateIdentity(
-        //         result.metadata,
-        //         result.module
-        //     )
-        // );
+        result.issues.push(
+            ...this.validator.validateMetadata(
+                result.metadata
+            )
+        );
         
         result.issues.push(
             ...this.validator.validateModuleTemplates(

@@ -105,6 +105,15 @@ export class XiboModuleDefinitionBuilder {
             metadata
         );
         
+        definition.preview = module.preview;
+        definition.stencil = module.stencil;
+
+        definition.onInitialize = module.onInitialize;
+        definition.onDataLoad = module.onDataLoad;
+        definition.onParseData = module.onParseData;
+        definition.onRender = module.onRender;
+        definition.onVisible = module.onVisible;
+
         this.moduleDefinition = definition;
         this.xiboModule = module;
         return this;
@@ -309,8 +318,7 @@ export class XiboModuleDefinitionBuilder {
         module: XiboModule
     ): string {
         return module.constructor.name
-            .replace(/Module$/, "")
-            .toLowerCase();
+            .replace(/Module$/, "");
     }
 }
 
