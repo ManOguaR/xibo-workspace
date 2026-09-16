@@ -57,10 +57,44 @@ export class XiboModuleDefinition {
         public type: string
     ) {
     }
+
+    // 
+    // settings
+    // properties
+    // propertyGroups
+
+    // 
+    // fallbackData
+    // sampleData
+
+    // 
+    // requiredElements
+
+    // 
+    // compatibilityClass
+    // validatorClass
 }
 
 export class XiboModuleTemplateDefinition {
     public datatypeId?: string;
+
+    public description: string = "";
+    public icon?: string;
+    public thumbnail?: string;
+
+    public isVisible: boolean = true;
+    public showIn: XiboShowIn = "both";
+    
+    public initialSize?: XiboInitialSize;
+    public hasDimensions: boolean = true;
+    public canRotate: boolean = false;
+
+    public stencil?: ResolvedStencil;
+    public assets: XiboAssetDefinition[] = [];
+
+    public onTemplateRender?: XiboPlayerHook;
+    public onTemplateVisible?: XiboPlayerHook;
+    public onElementParseData?: XiboPlayerHook;
 
     public constructor(
         public id: string,
@@ -68,15 +102,36 @@ export class XiboModuleTemplateDefinition {
         public type: XiboModuleTemplateType
     ) {
     }
+
+    // 
+    // properties
+    // propertyGroups
+
+    // 
+    // extends
 }
 
 export class XiboDatatypeDefinition {
+    public fields: XiboDatatypeField[] =[]
     public constructor(
         public id: string,
         public name: string
     ) {
     }
 }
+
+///PLACEHOLDER
+export class XiboDatatypeField {
+    public isRequired: boolean = false;
+
+    public constructor(
+        public id: string,
+        public type: string,
+        public title: string,
+    ) {
+    }
+}
+///PLACEHOLDER
 
 export class XiboAssetDefinition {
     public alias?: string;

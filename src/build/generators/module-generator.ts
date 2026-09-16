@@ -2,6 +2,13 @@ import type { ResolvedStencil } from "xibo-modules";
 
 import { XiboModuleDefinition } from "../xibo-build.js";
 
+import {
+    escapeXml,
+    generateStencilContent,
+    generateAssets,
+    generateHook
+} from "./xml-writer.js";
+
 export class XiboModuleXmlGenerator {
 
     public generate(
@@ -60,15 +67,15 @@ export class XiboModuleXmlGenerator {
         const propertyGroups = this.generatePropertyGroups(definition);
         const requiredElements = this.generateRequiredElements(definition);
 
-        const preview = this.generatePreview(definition);
-        const stencil = this.generateStencil(definition);
-        const assets = this.generateAssets(definition);
+        const preview = generateStencilContent("preview", definition.preview);
+        const stencil = generateStencilContent("stencil", definition.stencil);
+        const assets = generateAssets(definition.assets);
 
-        const onInitialize = this.generateOnInitialize(definition);
-        const onDataLoad = this.generateOnDataLoad(definition);
-        const onParseData = this.generateOnParseData(definition);
-        const onRender = this.generateOnRender(definition);
-        const onVisible = this.generateOnVisible(definition);
+        const onInitialize = generateHook("onInitialize", definition.onInitialize);
+        const onDataLoad = generateHook("onDataLoad", definition.onDataLoad);
+        const onParseData = generateHook("onParseData", definition.onParseData);
+        const onRender = generateHook("onRender", definition.onRender);
+        const onVisible = generateHook("onVisible", definition.onVisible);
 
         return `<?xml version="1.0" encoding="UTF-8"?>
 
@@ -155,186 +162,4 @@ ${sampleData}
     ): string {
         return "";
     }
-
-    private generatePreview(
-        definition: XiboModuleDefinition
-    ): string {
-        return this.generateStencilContent(
-            "preview",
-            definition.preview
-        );
-    }
-    
-    private generateStencil(
-        definition: XiboModuleDefinition
-    ): string {
-        return this.generateStencilContent(
-            "stencil",
-            definition.stencil
-        );
-    }
-    
-    private generateStencilContent(
-        tag: "preview" | "stencil",
-        stencil?: ResolvedStencil
-    ): string {
-        if (stencil === undefined) {
-            return "";
-        }
-        
-        const content = stencil.content;
-        
-        const source = stencil.kind === "hbs"
-            ? `\t\t<hbs${stencil.id ? ` id="${escapeXml(stencil.id)}"` : ""}>${cdata(`
-${content}
-\t\t`)}</hbs>\n`
-            : `\t\t<twig>${cdata(`
-${content}
-\t\t`)}</twig>\n`;
-
-        const head = stencil.head !== undefined
-            ? `\t\t<head>${cdata(`
-${stencil.head}
-\t\t`)}</head>\n`
-            : "";
-
-        const style = stencil.style !== undefined
-            ? `\t\t<style>${cdata(`
-${stencil.style}
-\t\t`)}</style>\n`
-            : "";
-
-        const width = stencil.width !== undefined
-            ? `\t\t<width>${stencil.width}</width>\n`
-            : "";
-
-        const height = stencil.height !== undefined
-            ? `\t\t<height>${stencil.height}</height>\n`
-            : "";
-
-        const gapBetweenHbs = stencil.gapBetweenHbs !== undefined
-            ? `\t\t<gapBetweenHbs>${stencil.gapBetweenHbs}</gapBetweenHbs>\n`
-            : "";
-
-        return `\t<${tag}>
-${head}${style}${width}${height}${gapBetweenHbs}${source}\t</${tag}>`;
-    }
-
-    private generateAssets(
-        definition: XiboModuleDefinition
-    ): string {
-        if (definition.assets.length === 0) {
-            return "";
-        }
-
-        const assets = definition.assets
-            .map(asset => {
-                const alias = asset.alias !== undefined
-                    ? ` alias="${escapeXml(asset.alias)}"`
-                    : "";
-
-                const cmsOnly = asset.cmsOnly !== undefined
-                    ? ` cmsOnly="${asset.cmsOnly}"`
-                    : "";
-
-                const isAutoInclude = asset.isAutoInclude !== undefined
-                    ? ` isAutoInclude="${asset.isAutoInclude}"`
-                    : "";
-
-                return `\t\t<asset id="${escapeXml(asset.id)}"${alias} type="${escapeXml(asset.type)}" mimeType="${escapeXml(asset.mimeType)}"${cmsOnly}${isAutoInclude} path="${escapeXml(asset.path)}"></asset>`;
-            })
-            .join("\n");
-
-        return `\t<assets>
-${assets}
-\t</assets>`;
-    }
-
-    private generateOnInitialize(
-        definition: XiboModuleDefinition
-    ): string {
-        const content = definition.onInitialize?.();
-
-        if (!content) {
-            return "";
-        }
-
-        return `\t<onInitialize>${cdata(`
-${content}
-\t`)}</onInitialize>`;
-    }
-
-    private generateOnDataLoad(
-        definition: XiboModuleDefinition
-    ): string {
-        const content = definition.onDataLoad?.();
-
-        if (!content) {
-            return "";
-        }
-
-        return `\t<onDataLoad>${cdata(`
-${content}
-\t`)}</onDataLoad>`;
-    }
-
-    private generateOnParseData(
-        definition: XiboModuleDefinition
-    ): string {
-        const content = definition.onParseData?.();
-
-        if (!content) {
-            return "";
-        }
-
-        return `\t<onParseData>${cdata(`
-${content}
-\t`)}</onParseData>`;
-    }
-
-    private generateOnRender(
-        definition: XiboModuleDefinition
-    ): string {
-        const content = definition.onRender?.();
-
-        if (!content) {
-            return "";
-        }
-
-        return `\t<onRender>${cdata(`
-${content}
-\t`)}</onRender>`;
-    }
-
-    private generateOnVisible(
-        definition: XiboModuleDefinition
-    ): string {
-        const content = definition.onVisible?.();
-
-        if (!content) {
-            return "";
-        }
-
-        return `\t<onVisible>${cdata(`
-${content}
-\t`)}</onVisible>`;
-    }
-}
-
-function escapeXml(
-    value: string
-): string {
-    return value
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll("\"", "&quot;")
-        .replaceAll("'", "&apos;");
-}
-
-function cdata(content: string): string {
-    return `<![CDATA[${content.replaceAll(
-        "]]>",
-        "]]]]><![CDATA[>"
-    )}]]>`;
 }
