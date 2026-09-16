@@ -2,7 +2,7 @@ import { cp, mkdir, readdir, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 
-import { DevServer } from "../developer/xibo-player/dev-server.js";
+import { DevServer } from "../developer/dev-server.js";
 
 
 export async function runRunCommand(

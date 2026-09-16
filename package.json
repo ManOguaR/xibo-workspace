@@ -29,6 +29,9 @@
     "vite": "^8.3.0"
   },
   "dependencies": {
-    "tsx": "^4.23.13"
+    "fast-xml-parser": "^5.11.1",
+    "fast-xml-validator": "^1.4.2",
+    "tsx": "^4.23.13",
+    "twing": "^7.3.1"
   }
 }
