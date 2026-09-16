@@ -63,7 +63,8 @@ async function collectBuildOutput(
 ): Promise<void> {
     const buildRoot = resolve(
         projectRoot,
-        ".xibo"
+        ".xibo",
+        "dist"
     );
 
     let buildInfo;

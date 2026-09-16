@@ -55,7 +55,7 @@ export async function runBuildCommand(): Promise<void> {
             configFile: false,
             input: app.entrypoint,
             build: {
-                outDir: ".xibo/dist",
+                outDir: `.xibo/dist/${moduleDefinition.type}/assets`,
                 emptyOutDir: true,
                 rolldownOptions: {
                     output: {
@@ -110,13 +110,20 @@ async function emitXiboModule(
         recursive: true
     });
 
+    const distRoot = resolve(output, "dist");
+    const modulesRoot = resolve(distRoot, "modules");
+    await mkdir(modulesRoot, { recursive: true });
+    const datatypesRoot = resolve(modulesRoot, "datatypes");
+    await mkdir(datatypesRoot, { recursive: true });
+    const templatesRoot = resolve(modulesRoot, "templates");
+    await mkdir(templatesRoot, { recursive: true });
     const manifest: JsonObject = {};
 
     //
     // Module
     //
     const modulePath = resolve(
-        output,
+        modulesRoot,
         `${definition.type.toLowerCase()}.xml`
     );
 
@@ -136,7 +143,7 @@ async function emitXiboModule(
 
     if (datatype !== undefined) {
         const datatypePath = resolve(
-            output,
+            datatypesRoot,
             `${datatype.id}.xml`
         );
 
@@ -167,7 +174,7 @@ async function emitXiboModule(
             
             for (const templateDefinition of definition.templateDefinitions) {
                 const templatePath = resolve(
-                    output,
+                    templatesRoot,
                     `${templateDefinition.id}.xml`
                 );
                 
@@ -189,8 +196,8 @@ async function emitXiboModule(
             // Single-file
             //
             const templatesPath = resolve(
-                output,
-                "templates.xml"
+                templatesRoot,
+                `${definition.type.toLowerCase()}.xml`
             );
 
             await writeFile(
