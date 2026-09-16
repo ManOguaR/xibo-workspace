@@ -1,5 +1,5 @@
 import { JsonObject } from "../private-types.js";
-import { StencilSource, XiboPlayerHook } from "xibo-modules";
+import { ResolvedStencil, XiboPlayerHook } from "xibo-modules";
 
 import { XiboModuleTemplateType } from "../../xibo/XiboModuleTemplate.js";
 
@@ -35,9 +35,9 @@ export class XiboModuleDefinition {
 
     public datatypeDefinition?: XiboDatatypeDefinition;
     public cacheKey?: string;
-    
-    public preview?: StencilSource;
-    public stencil?: StencilSource;
+
+    public preview?: ResolvedStencil;
+    public stencil?: ResolvedStencil;
 
     public onInitialize?: XiboPlayerHook;
     public onDataLoad?: XiboPlayerHook;
@@ -60,7 +60,6 @@ export class XiboModuleDefinition {
 }
 
 export class XiboModuleTemplateDefinition {
-
     public datatypeId?: string;
 
     public constructor(
@@ -72,7 +71,6 @@ export class XiboModuleTemplateDefinition {
 }
 
 export class XiboDatatypeDefinition {
-
     public constructor(
         public id: string,
         public name: string
