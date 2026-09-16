@@ -175,7 +175,7 @@ async function emitXiboModule(
             for (const templateDefinition of definition.templateDefinitions) {
                 const templatePath = resolve(
                     templatesRoot,
-                    `${templateDefinition.id}.xml`
+                    `${templateDefinition.id.replaceAll("_", "-")}-${templateDefinition.type}.xml`
                 );
                 
                 await writeFile(

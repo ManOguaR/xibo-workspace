@@ -267,7 +267,7 @@ export async function runAddCommand(
         "utf8"
     );
 
-    const templateId = toIdName(name);
+    const templateId = toTemplateIdName(name);
     const templateName = toTypeName(name);
 
     const targetFile = resolve(
@@ -394,6 +394,16 @@ function toIdName(
         .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
         .replace(/[^a-zA-Z0-9]+/g, "-")
         .replace(/^-+|-+$/g, "")
+        .toLowerCase();
+}
+
+function toTemplateIdName(
+    name: string
+): string {
+    return name
+        .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+        .replace(/[^a-zA-Z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "")
         .toLowerCase();
 }
 

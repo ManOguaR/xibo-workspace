@@ -104,6 +104,16 @@ export class BootstrapValidator {
         }
         
         for (const [id] of definitions) {
+            if (!/^[a-z0-9]+(?:_[a-z0-9]+)*$/.test(id)) {
+                issues.push({
+                    severity: ValidationSeverity.Error,
+                    code: "bootstrap.template.id-invalid",
+                    path: id,
+                    message: `Template id '${id}' must use snake_case.`
+                });
+                continue;
+            }
+            
             const expectedName = id.split(/[^a-zA-Z0-9]+/)
                 .filter(Boolean)
                 .map(part =>
