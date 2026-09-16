@@ -1,3 +1,5 @@
+import type { ResolvedStencil } from "xibo-modules";
+
 import { XiboModuleDefinition } from "../xibo-build.js";
 
 export class XiboModuleXmlGenerator {
@@ -155,49 +157,51 @@ ${sampleData}
     }
 
     private generatePreview(
-        _definition: XiboModuleDefinition
+        definition: XiboModuleDefinition
     ): string {
-        return `\t<preview></preview>`;
+        return this.generateStencilContent(
+            "preview",
+            definition.preview
+        );
     }
-
+    
     private generateStencil(
         definition: XiboModuleDefinition
     ): string {
-        const stencil = definition.stencil;
-
+        return this.generateStencilContent(
+            "stencil",
+            definition.stencil
+        );
+    }
+    
+    private generateStencilContent(
+        tag: "preview" | "stencil",
+        stencil?: ResolvedStencil
+    ): string {
         if (stencil === undefined) {
             return "";
         }
-
+        
         const content = stencil.content;
-
-        let source: string;
-
-        if (stencil.kind === "hbs") {
-            const id = stencil.id
-                ? ` id="${escapeXml(stencil.id)}"`
-                : "";
-
-            source = `\t\t<hbs${id}><![CDATA[
+        
+        const source = stencil.kind === "hbs"
+            ? `\t\t<hbs${stencil.id ? ` id="${escapeXml(stencil.id)}"` : ""}>${cdata(`
 ${content}
-\t\t]]></hbs>\n`;
-        }
-        else {
-            source = `\t\t<twig><![CDATA[
+\t\t`)}</hbs>\n`
+            : `\t\t<twig>${cdata(`
 ${content}
-\t\t]]></twig>\n`;
-        }
+\t\t`)}</twig>\n`;
 
         const head = stencil.head !== undefined
-            ? `\t\t<head><![CDATA[
+            ? `\t\t<head>${cdata(`
 ${stencil.head}
-\t\t]]></head>\n`
+\t\t`)}</head>\n`
             : "";
 
         const style = stencil.style !== undefined
-            ? `\t\t<style><![CDATA[
+            ? `\t\t<style>${cdata(`
 ${stencil.style}
-\t\t]]></style>\n`
+\t\t`)}</style>\n`
             : "";
 
         const width = stencil.width !== undefined
@@ -212,8 +216,8 @@ ${stencil.style}
             ? `\t\t<gapBetweenHbs>${stencil.gapBetweenHbs}</gapBetweenHbs>\n`
             : "";
 
-        return `\t<stencil>
-${head}${style}${width}${height}${gapBetweenHbs}${source}\t</stencil>`;
+        return `\t<${tag}>
+${head}${style}${width}${height}${gapBetweenHbs}${source}\t</${tag}>`;
     }
 
     private generateAssets(
@@ -255,9 +259,9 @@ ${assets}
             return "";
         }
 
-        return `\t<onInitialize><![CDATA[
+        return `\t<onInitialize>${cdata(`
 ${content}
-\t]]></onInitialize>`;
+\t`)}</onInitialize>`;
     }
 
     private generateOnDataLoad(
@@ -269,9 +273,9 @@ ${content}
             return "";
         }
 
-        return `\t<onDataLoad><![CDATA[
+        return `\t<onDataLoad>${cdata(`
 ${content}
-\t]]></onDataLoad>`;
+\t`)}</onDataLoad>`;
     }
 
     private generateOnParseData(
@@ -283,9 +287,9 @@ ${content}
             return "";
         }
 
-        return `\t<onParseData><![CDATA[
+        return `\t<onParseData>${cdata(`
 ${content}
-\t]]></onParseData>`;
+\t`)}</onParseData>`;
     }
 
     private generateOnRender(
@@ -297,9 +301,9 @@ ${content}
             return "";
         }
 
-        return `\t<onRender><![CDATA[
+        return `\t<onRender>${cdata(`
 ${content}
-\t]]></onRender>`;
+\t`)}</onRender>`;
     }
 
     private generateOnVisible(
@@ -311,9 +315,9 @@ ${content}
             return "";
         }
 
-        return `\t<onVisible><![CDATA[
+        return `\t<onVisible>${cdata(`
 ${content}
-\t]]></onVisible>`;
+\t`)}</onVisible>`;
     }
 }
 
@@ -326,4 +330,11 @@ function escapeXml(
         .replaceAll(">", "&gt;")
         .replaceAll("\"", "&quot;")
         .replaceAll("'", "&apos;");
+}
+
+function cdata(content: string): string {
+    return `<![CDATA[${content.replaceAll(
+        "]]>",
+        "]]]]><![CDATA[>"
+    )}]]>`;
 }
