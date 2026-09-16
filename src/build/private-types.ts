@@ -1,4 +1,4 @@
-import { XiboModule, XiboModuleTemplate } from "xibo-modules";
+import { StencilOptions, XiboModule, XiboModuleTemplate } from "xibo-modules";
 
 export type JsonValue =
     | string
@@ -55,4 +55,10 @@ export class BootstrapDiscoveryResult {
             console.log("Bootstrap validation successful.");
         }
     }
+}
+
+export interface StencilResult extends StencilOptions {
+    kind: "twig" | "hbs";
+    content: string;
+    id?: string;
 }

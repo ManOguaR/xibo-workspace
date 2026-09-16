@@ -126,35 +126,41 @@ export class XiboModuleDefinitionBuilder {
         if (this.xiboModuleTemplates.some(current => current.constructor.name === template.constructor.name)) {
             throw new Error(`Template '${template.constructor.name}' has already been added.`);
         }
-
+        
         const moduleDefinition = this.ensureModule();
+        
         const {
             id,
             metadata: templateMetadata
         } = this.resolveMetadata(metadata);
-
+        
         const name = templateMetadata["name"];
-
+        
         if (typeof name !== "string") {
             throw new Error(`Template metadata '${id}.name' is required.`);
         }
-
+        
         const definition = new XiboModuleTemplateDefinition(
             id,
             name,
             template.type
         );
-
+        
         this.assignMetadata(
             definition,
             templateMetadata
         );
-
-        moduleDefinition.templateDefinitions.push(
-            definition
-        );
-
+        
+        definition.stencil = template.stencil?.resolve();
+        
+        definition.onTemplateRender = template.onTemplateRender;
+        definition.onTemplateVisible = template.onTemplateVisible;
+        definition.onElementParseData = template.onElementParseData;
+        
+        moduleDefinition.templateDefinitions.push(definition);
+        
         this.xiboModuleTemplates.push(template);
+        
         return this;
     }
 

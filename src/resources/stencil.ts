@@ -1,6 +1,8 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import { StencilResult } from '../build/private-types.js';
+
 export interface StencilOptions {
     head?: string;
     style?: string;
@@ -10,12 +12,6 @@ export interface StencilOptions {
 }
 
 export interface HbsOptions extends StencilOptions {
-    id?: string;
-}
-
-export interface ResolvedStencil extends StencilOptions {
-    kind: "twig" | "hbs";
-    content: string;
     id?: string;
 }
 
@@ -48,7 +44,7 @@ export abstract class StencilSource {
         this.gapBetweenHbs = options.gapBetweenHbs;
     }
 
-    public resolve(): ResolvedStencil {
+    public resolve(): StencilResult {
         return {
             kind: "twig",
             content: this.getContent(),
@@ -81,7 +77,7 @@ export class HbsSource extends StencilSource {
         this.id = options.id;
     }
 
-    public override resolve(): ResolvedStencil {
+    public override resolve(): StencilResult {
         return {
             ...super.resolve(),
             kind: "hbs",

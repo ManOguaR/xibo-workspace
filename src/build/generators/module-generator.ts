@@ -1,5 +1,3 @@
-import type { ResolvedStencil } from "xibo-modules";
-
 import { XiboModuleDefinition } from "../xibo-build.js";
 
 import {

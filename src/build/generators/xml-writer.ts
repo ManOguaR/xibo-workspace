@@ -1,11 +1,7 @@
-import type {
-    ResolvedStencil,
-    XiboPlayerHook
-} from "xibo-modules";
+import type { XiboPlayerHook } from "xibo-modules";
 
-import type {
-    XiboAssetDefinition
-} from "../builders/module-definition.js";
+import type { StencilResult } from "../private-types.js";
+import type { XiboAssetDefinition } from "../xibo-build.js";
 
 export function escapeXml(value: string): string {
     return value
@@ -25,7 +21,7 @@ export function cdata(content: string): string {
 
 export function generateStencilContent(
     tag: "preview" | "stencil",
-    stencil?: ResolvedStencil,
+    stencil?: StencilResult,
     indent: string = "\t",
     childIndent: string = "\t\t"
 ): string {
