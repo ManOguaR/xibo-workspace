@@ -3,7 +3,7 @@ import { XiboModule, XiboModuleTemplate } from "xibo-modules";
 
 import { BootstrapDiscoveryResult, JsonObject } from "../private-types.js";
 
-import { CompanionAppDefinition, XiboModuleDefinition, XiboModuleTemplateDefinition, XiboDatatypeDefinition } from './module-definition.js';
+import { CompanionAppDefinition, XiboModuleDefinition, XiboModuleTemplateDefinition, XiboDatatypeDefinition, XiboAssetDefinition } from './module-definition.js';
 
 export class XiboModuleDefinitionBuilder {
     private moduleDefinition?: XiboModuleDefinition;
@@ -322,4 +322,4 @@ export class XiboModuleDefinitionBuilder {
     }
 }
 
-export { XiboModuleDefinition, XiboModuleTemplateDefinition, XiboDatatypeDefinition }
+export { XiboModuleDefinition, XiboModuleTemplateDefinition, XiboDatatypeDefinition, XiboAssetDefinition }

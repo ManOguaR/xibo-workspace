@@ -1,11 +1,12 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
+import { resolve, extname } from "node:path";
 import { build as viteBuild } from "vite";
 
 import { 
     BootstrapDiscovery, 
     JsonObject,
-    ValidationIssue, 
+    ValidationIssue,
+    XiboAssetDefinition, 
     XiboModuleDefinition, 
     XiboModuleDefinitionBuilder, 
     XiboModuleXmlGenerator, 
@@ -65,12 +66,17 @@ export async function runBuildCommand(): Promise<void> {
             configFile: false,
             input: app.entrypoint,
             build: {
-                outDir: `.xibo/dist/${moduleDefinition.type}/assets`,
+                outDir: `.xibo/dist/${moduleDefinition.type}`,
                 emptyOutDir: true,
+                cssCodeSplit: false,
                 rolldownOptions: {
                     output: {
                         codeSplitting: false,
-                        entryFileNames: `${packageName}.min.js`
+                        entryFileNames: `assets/${moduleDefinition.type.toLowerCase()}.min.js`,
+                        assetFileNames: assetInfo =>
+                            assetInfo.names.some(name => name.endsWith(".css"))
+                                ? `assets/${moduleDefinition.type.toLowerCase()}.min.css`
+                                : "assets/[name]-[hash][extname]"
                     }
                 }
             }            
@@ -81,22 +87,22 @@ export async function runBuildCommand(): Promise<void> {
     // 4. Run build transformations / user tasks
     //
     if (compilation !== undefined) {
-        // TODO: identify Vite entry output as Xibo asset
-        // TODO: emit development asset: <appname>.js
-        // TODO: minify development asset
-        // TODO: emit production asset: <appname>.min.js
+        // TODO: build transformations / user tasks
     }
 
     //
     // n-2. Collect final module resources
     //
-    // const resources = await collectResources({
-    //     compilation,
-    //     datatype,
-    //     assets,
-    //     provider,
-    //     ...
-    // });
+    moduleDefinition.assets = await collectAssets(
+        resolve(
+            projectRoot,
+            ".xibo",
+            "dist",
+            moduleDefinition.type,
+            "assets"
+        ),
+        moduleDefinition.type
+    );
 
     //
     // n-1. Emit Xibo definitions
@@ -270,4 +276,71 @@ function normalizePackageName(
         .replace(/[^a-zA-Z0-9._-]+/g, "-")
         .replace(/^-+|-+$/g, "")
         .toLowerCase();
+}
+
+async function collectAssets(
+    assetsRoot: string,
+    moduleType: string
+): Promise<XiboAssetDefinition[]> {
+
+    const entries = await readdir(
+        assetsRoot,
+        {
+            withFileTypes: true
+        }
+    );
+
+    return entries
+        .filter(entry => entry.isFile())
+        .map(entry =>
+            new XiboAssetDefinition(
+                getAssetId(entry.name),
+                "path",
+                getAssetMimeType(entry.name),
+                `/${moduleType}/assets/${entry.name}`
+            )
+        );
+}
+
+function getAssetId(
+    fileName: string
+): string {
+    return fileName
+        .replace(/\.min(?=\.)/, "")
+        .replaceAll(".", "-");
+}
+
+function getAssetMimeType(
+    fileName: string
+): string {
+
+    switch (extname(fileName).toLowerCase()) {
+        case ".js":
+            return "text/javascript";
+
+        case ".css":
+            return "text/css";
+
+        case ".png":
+            return "image/png";
+
+        case ".jpg":
+        case ".jpeg":
+            return "image/jpeg";
+
+        case ".svg":
+            return "image/svg+xml";
+
+        case ".webp":
+            return "image/webp";
+
+        case ".woff":
+            return "font/woff";
+
+        case ".woff2":
+            return "font/woff2";
+
+        default:
+            return "application/octet-stream";
+    }
 }

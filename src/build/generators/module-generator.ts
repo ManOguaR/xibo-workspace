@@ -226,14 +226,37 @@ ${stencil.style}
 
         return `\t<stencil>
 ${head}${style}${width}${height}${gapBetweenHbs}${source}\t</stencil>`;
-}
-
-    private generateAssets(
-        _definition: XiboModuleDefinition
-    ): string {
-        return "";
     }
     
+    private generateAssets(
+        definition: XiboModuleDefinition
+    ): string {
+        if (definition.assets.length === 0) {
+            return "";
+        }
+
+        const assets = definition.assets
+            .map(asset => {
+                const alias = asset.alias !== undefined
+                    ? ` alias="${escapeXml(asset.alias)}"`
+                    : "";
+
+                const cmsOnly = asset.cmsOnly !== undefined
+                    ? ` cmsOnly="${asset.cmsOnly}"`
+                    : "";
+
+                const isAutoInclude = asset.isAutoInclude !== undefined
+                    ? ` isAutoInclude="${asset.isAutoInclude}"`
+                    : "";
+
+                return `\t\t<asset id="${escapeXml(asset.id)}"${alias} type="${escapeXml(asset.type)}" mimeType="${escapeXml(asset.mimeType)}"${cmsOnly}${isAutoInclude} path="${escapeXml(asset.path)}"></asset>`;
+            })
+            .join("\n");
+
+        return `\t<assets>
+${assets}
+\t</assets>`;
+}    
     private generateOnInitialize(
         definition: XiboModuleDefinition
     ): string {

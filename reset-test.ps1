@@ -83,6 +83,12 @@ try {
             npx.cmd xibo add $Template $templateName
         }
     }
+
+    Write-Host "==> Installing project dependencies..."
+
+    Invoke-Checked {
+        npm.cmd install
+    }
 }
 finally {
     Pop-Location

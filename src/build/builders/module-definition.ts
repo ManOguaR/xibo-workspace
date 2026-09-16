@@ -45,6 +45,8 @@ export class XiboModuleDefinition {
     public onRender?: XiboPlayerHook;
     public onVisible?: XiboPlayerHook;
 
+    public assets: XiboAssetDefinition[] = [];
+
     public templateDefinitions: XiboModuleTemplateDefinition[] = [];
 
     public companionAppDefinition?: CompanionAppDefinition;
@@ -74,6 +76,19 @@ export class XiboDatatypeDefinition {
     public constructor(
         public id: string,
         public name: string
+    ) {
+    }
+}
+
+export class XiboAssetDefinition {
+    public alias?: string;
+    public cmsOnly?: boolean;
+    public isAutoInclude?: boolean;
+    public constructor(
+        public id: string,
+        public type: string,
+        public mimeType: string,
+        public path: string
     ) {
     }
 }

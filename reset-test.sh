@@ -45,6 +45,9 @@ if [ "$TEMPLATE" = "static" ] || [ "$TEMPLATE" = "element" ]; then
     npx xibo add "$TEMPLATE" "$TEMPLATE_NAME"
 fi
 
+echo "==> Installing project dependencies..."
+npm install
+
 echo
 echo "Xibo test project ready:"
 echo "  Name: $NAME"
