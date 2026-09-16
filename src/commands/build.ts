@@ -18,12 +18,22 @@ export async function runBuildCommand(): Promise<void> {
     const packageJsonPath = resolve(projectRoot, "package.json");
 
     const packageJson = JSON.parse(
-        await readFile(packageJsonPath, "utf8")) as { name?: string; };
+        await readFile(packageJsonPath, "utf8")) as { 
+            name?: string; 
+            build?: {
+                singleFileTemplates?: boolean;
+            };
+        };
 
     if (typeof packageJson.name !== "string" || packageJson.name.length === 0) {
         throw new Error("Package name is required.");
     }
     const packageName = normalizePackageName(packageJson.name);
+
+    const singleFileTemplates = packageJson.build?.singleFileTemplates;
+    if (singleFileTemplates !== undefined && typeof singleFileTemplates !== "boolean") {
+        throw new Error("Build setting 'singleFileTemplates' must be a boolean.");
+    }
 
     //
     // 1. Discover bootstrap definition sources
@@ -91,7 +101,10 @@ export async function runBuildCommand(): Promise<void> {
     //
     // n-1. Emit Xibo definitions
     //
-    const manifest = await emitXiboModule(moduleDefinition);
+    const manifest = await emitXiboModule(
+        moduleDefinition,
+        !(singleFileTemplates ?? false)
+    );
 
     //
     // n. Package final Xibo module
@@ -104,6 +117,7 @@ export async function runBuildCommand(): Promise<void> {
 
 async function emitXiboModule(
     definition: XiboModuleDefinition,
+    multiFile: boolean = true,
     output: string = resolve(process.cwd(), ".xibo")
 ): Promise<JsonObject> {
     await mkdir(output, {
@@ -165,7 +179,7 @@ async function emitXiboModule(
             throw new Error(`Module '${definition.id}' defines templates but has no datatype.`);
         }
         
-        if (true) {
+        if (multiFile) {
             
             //
             // Multi-file
