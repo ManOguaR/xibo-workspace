@@ -1,40 +1,63 @@
 import {
-    XiboModuleTemplate
-} from "../../xibo/XiboModuleTemplate.js";
-
-import {
     XiboModuleTemplateDefinition
 } from "../builders/module-definition.js";
 
 export class XiboModuleTemplateXmlGenerator {
-    
-    public generate(
+
+    public generateTemplate(
+        definition: XiboModuleTemplateDefinition,
+        datatypeId?: string
+    ): string {
+        return `<?xml version="1.0" encoding="UTF-8"?>
+
+<templates>${this.generate(
+    definition,
+    datatypeId
+)}
+</templates>
+`;
+    }
+
+    public generateTemplates(
         definitions: XiboModuleTemplateDefinition[],
         datatypeId?: string
     ): string {
         const templates = definitions
-            .map(definition => {
-                const resolvedDatatypeId = datatypeId ?? definition.datatypeId;
-                
-                if (resolvedDatatypeId === undefined) {
-                    throw new Error(`Template '${definition.id}' has no datatype.`);
-                }
-            
-                return `
+            .map(definition =>
+                this.generate(
+                    definition,
+                    datatypeId
+                )
+            )
+            .join("");
+
+        return `<?xml version="1.0" encoding="UTF-8"?>
+
+<templates>${templates}
+</templates>
+`;
+    }
+
+    private generate(
+        definition: XiboModuleTemplateDefinition,
+        datatypeId?: string
+    ): string {
+        const resolvedDatatypeId =
+            datatypeId ?? definition.datatypeId;
+
+        if (resolvedDatatypeId === undefined) {
+            throw new Error(
+                `Template '${definition.id}' has no datatype.`
+            );
+        }
+
+        return `
     <template>
         <id>${escapeXml(definition.id)}</id>
         <type>${escapeXml(definition.type)}</type>
         <dataType>${escapeXml(resolvedDatatypeId)}</dataType>
         <title>${escapeXml(definition.name)}</title>
     </template>`;
-        })
-        .join("");
-
-    return `<?xml version="1.0" encoding="UTF-8"?>
-
-<templates>${templates}
-</templates>
-`;
     }
 }
 

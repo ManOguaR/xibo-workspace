@@ -155,27 +155,56 @@ async function emitXiboModule(
     //
     if (definition.templateDefinitions.length > 0) {
         if (datatype === undefined) {
-            throw new Error(
-                `Module '${definition.id}' defines templates but has no datatype.`
-            );
+            throw new Error(`Module '${definition.id}' defines templates but has no datatype.`);
         }
+        
+        if (true) {
+            
+            //
+            // Multi-file
+            //
+            const templateGenerator = new XiboModuleTemplateXmlGenerator();
+            
+            for (const templateDefinition of definition.templateDefinitions) {
+                const templatePath = resolve(
+                    output,
+                    `${templateDefinition.id}.xml`
+                );
+                
+                await writeFile(
+                    templatePath,
+                    templateGenerator.generateTemplate(
+                        templateDefinition,
+                        datatype.id
+                    ),
+                    "utf8"
+                );
+                
+                manifest[`template:${templateDefinition.id}`] = templatePath;
+            }
+        }
+        else {
 
-        const templatesPath = resolve(
-            output,
-            "templates.xml"
-        );
+            //
+            // Single-file
+            //
+            const templatesPath = resolve(
+                output,
+                "templates.xml"
+            );
 
-        await writeFile(
-            templatesPath,
-            new XiboModuleTemplateXmlGenerator()
-                .generate(
-                    definition.templateDefinitions,
-                    datatype.id
-                ),
-            "utf8"
-        );
+            await writeFile(
+                templatesPath,
+                new XiboModuleTemplateXmlGenerator()
+                    .generateTemplates(
+                        definition.templateDefinitions,
+                        datatype?.id
+                    ),
+                "utf8"
+            );
 
-        manifest["templates"] = templatesPath;
+            manifest["templates"] = templatesPath;
+        }
     }
 
     //
