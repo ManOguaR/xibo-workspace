@@ -83,7 +83,8 @@ export class XiboDatatypeDefinition {
 export class XiboAssetDefinition {
     public alias?: string;
     public cmsOnly?: boolean;
-    public isAutoInclude?: boolean;
+    public isAutoInclude: boolean = true;
+
     public constructor(
         public id: string,
         public type: string,
@@ -94,7 +95,6 @@ export class XiboAssetDefinition {
 }
 
 export class CompanionAppDefinition {
-
     public constructor(
         public entrypoint: string
     ) {
