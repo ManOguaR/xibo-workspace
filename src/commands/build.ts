@@ -29,7 +29,6 @@ export async function runBuildCommand(): Promise<void> {
     if (typeof packageJson.name !== "string" || packageJson.name.length === 0) {
         throw new Error("Package name is required.");
     }
-    const packageName = normalizePackageName(packageJson.name);
 
     const singleFileTemplates = packageJson.build?.singleFileTemplates;
     if (singleFileTemplates !== undefined && typeof singleFileTemplates !== "boolean") {
@@ -283,12 +282,23 @@ async function collectAssets(
     moduleType: string
 ): Promise<XiboAssetDefinition[]> {
 
-    const entries = await readdir(
-        assetsRoot,
-        {
-            withFileTypes: true
+    let entries;
+
+    try {
+        entries = await readdir(
+            assetsRoot,
+            {
+                withFileTypes: true
+            }
+        );
+    }
+    catch (error) {
+        if ((error as NodeJS.ErrnoException).code === "ENOENT") { 
+            return [];
         }
-    );
+
+        throw error;
+    }
 
     return entries
         .filter(entry => entry.isFile())
