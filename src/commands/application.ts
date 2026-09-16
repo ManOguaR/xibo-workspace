@@ -9,6 +9,10 @@ interface PackageJson {
         [key: string]: unknown;
         vite?: string;
     };
+
+    devDependencies?: {
+        [key: string]: string;
+    };
 }
 
 export async function runAppCommand(
@@ -91,11 +95,22 @@ export async function addCompanionApp(
     );
 
     await writeFile(
+        resolve(
+            sourceRoot,
+            "vite-env.d.ts"
+        ),
+        `/// <reference types="vite/client" />\n`
+    );
+
+    await writeFile(
         entrypoint,
         "export {};\n"
     );
 
     packageJson.xibo.vite = "src/main.ts";
+
+    packageJson.devDependencies ??= {};
+    packageJson.devDependencies["vite"] = "^8.3.0";
 
     await writeFile(
         packageJsonPath,
