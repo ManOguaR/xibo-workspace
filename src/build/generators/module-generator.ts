@@ -1,8 +1,3 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
-
-import {  HbsSource } from 'xibo-modules';
-
 import { XiboModuleDefinition } from "../xibo-build.js";
 
 export class XiboModuleXmlGenerator {
@@ -169,27 +164,20 @@ ${sampleData}
         definition: XiboModuleDefinition
     ): string {
         const stencil = definition.stencil;
-        
+
         if (stencil === undefined) {
             return "";
         }
-        
-        const content = readFileSync(
-            resolve(
-                process.cwd(),
-                ".bootstrap",
-                stencil.path
-            ),
-            "utf8"
-        );
-        
+
+        const content = stencil.content;
+
         let source: string;
-        
-        if (stencil instanceof HbsSource) {
+
+        if (stencil.kind === "hbs") {
             const id = stencil.id
                 ? ` id="${escapeXml(stencil.id)}"`
                 : "";
-                
+
             source = `\t\t<hbs${id}><![CDATA[
 ${content}
 \t\t]]></hbs>\n`;
@@ -199,7 +187,7 @@ ${content}
 ${content}
 \t\t]]></twig>\n`;
         }
-        
+
         const head = stencil.head !== undefined
             ? `\t\t<head><![CDATA[
 ${stencil.head}
@@ -227,7 +215,7 @@ ${stencil.style}
         return `\t<stencil>
 ${head}${style}${width}${height}${gapBetweenHbs}${source}\t</stencil>`;
     }
-    
+
     private generateAssets(
         definition: XiboModuleDefinition
     ): string {
@@ -256,16 +244,17 @@ ${head}${style}${width}${height}${gapBetweenHbs}${source}\t</stencil>`;
         return `\t<assets>
 ${assets}
 \t</assets>`;
-}    
+    }
+
     private generateOnInitialize(
         definition: XiboModuleDefinition
     ): string {
         const content = definition.onInitialize?.();
-        
+
         if (!content) {
             return "";
         }
-        
+
         return `\t<onInitialize><![CDATA[
 ${content}
 \t]]></onInitialize>`;
