@@ -141,6 +141,8 @@ export default class FeatureTemplate extends XiboStaticTemplate {
         await rm(duplicatePath);
         await rm(manifest.module);
         await assert.rejects(render(), /No module found for datatype/);
+        await rm(manifest["template:feature_template"]);
+        await assert.rejects(render(), /ENOENT/);
     }
     finally {
         if (child && child.exitCode === null && child.signalCode === null) {
