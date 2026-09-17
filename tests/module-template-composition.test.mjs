@@ -48,20 +48,22 @@ test("#17: xibo build output composes module and static template without author 
         await writeFile(resolve(project, ".bootstrap", "module.ts"), `
 import { XiboModule, html } from "xibo-modules";
 export default class CompositionModule extends XiboModule {
-    stencil = html("../index.html", {
-        head: '<meta name="module-head" content="compiled">',
-        style: '.composition-module { display: block; }'
-    });
+    stencil = html(
+        "../index.html",
+        () => '<meta name="module-head" content="compiled">',
+        () => '.composition-module { display: block; }'
+    );
     onRender() { document.body.dataset.moduleHook = "compiled"; }
 }
 `);
         await writeFile(resolve(project, ".bootstrap", "FeatureTemplate.ts"), `
 import { XiboStaticTemplate, twig } from "xibo-modules";
 export default class FeatureTemplate extends XiboStaticTemplate {
-    stencil = twig("../template.html", {
-        head: '<meta name="template-head" content="compiled">',
-        style: '.composition-template { display: block; }'
-    });
+    stencil = twig(
+        "../template.html",
+        () => '<meta name="template-head" content="compiled">',
+        () => '.composition-template { display: block; }'
+    );
     onTemplateRender() { document.body.dataset.templateHook = "compiled"; }
 }
 `);

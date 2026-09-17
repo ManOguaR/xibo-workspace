@@ -105,7 +105,7 @@ test("HBS metadata and programmatic sources survive resolution", () => {
     const programmatic = new HtmlSource(() => {
         calls++;
         return "<p>Computed</p>";
-    }, { height: 120 });
+    }, undefined, undefined, { height: 120 });
 
     assert.equal(programmatic.resolve().content, "<p>Computed</p>");
     assert.equal(programmatic.resolve().height, 120);
