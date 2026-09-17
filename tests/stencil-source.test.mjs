@@ -3,10 +3,17 @@ import assert from "node:assert/strict";
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { XMLParser } from "fast-xml-parser";
 
-import { XiboModule, HtmlSource, html, twig, hbs } from "../dist/index.js";
+import { XiboModule, XiboStaticTemplate, HtmlSource, html, twig, hbs } from "../dist/index.js";
 import { XiboModuleDefinitionBuilder } from "../dist/build/builders/definition-builder.js";
 import { XiboModuleXmlGenerator } from "../dist/build/generators/module-generator.js";
+import { XiboModuleTemplateXmlGenerator } from "../dist/build/generators/template-generator.js";
+
+const parser = new XMLParser({
+    trimValues: false,
+    parseTagValue: false
+});
 
 test("file sources resolve during definition composition, not XML generation", () => {
     const previous = process.cwd();
@@ -40,6 +47,49 @@ test("file sources resolve during definition composition, not XML generation", (
         process.chdir(previous);
         rmSync(root, { recursive: true, force: true });
     }
+});
+
+test("static-template stencil remains independent from the module stencil through XML generation", () => {
+    const moduleContent = '<section data-owner="module">Module stencil</section>';
+    const templateContent = '<article data-owner="template">{{ player }}</article>';
+
+    class ExampleModule extends XiboModule {
+        stencil = twig`${moduleContent}`;
+    }
+
+    class ExampleTemplate extends XiboStaticTemplate {
+        stencil = twig`${templateContent}`;
+    }
+
+    const definition = new XiboModuleDefinitionBuilder()
+        .addModule(new ExampleModule(), {
+            id: "stencil-module",
+            name: "Stencil Module"
+        })
+        .addTemplate(new ExampleTemplate(), {
+            id: "stencil-template",
+            name: "Stencil Template"
+        })
+        .build();
+
+    const templateDefinition = definition.templateDefinitions[0];
+
+    assert.equal(definition.stencil.content, moduleContent);
+    assert.equal(templateDefinition.stencil.content, templateContent);
+    assert.notEqual(templateDefinition.stencil.content, definition.stencil.content);
+
+    const moduleXml = new XiboModuleXmlGenerator().generate(definition);
+    const templateXml = new XiboModuleTemplateXmlGenerator().generateTemplate(
+        templateDefinition,
+        definition.datatypeDefinition.id
+    );
+
+    const module = parser.parse(moduleXml).module;
+    const template = parser.parse(templateXml).templates.template;
+
+    assert.equal(module.stencil.twig.trim(), moduleContent);
+    assert.equal(template.stencil.twig.trim(), templateContent);
+    assert.equal(template.stencil.twig.includes(moduleContent), false);
 });
 
 test("inline Twig and HTML preserve source and Twig placeholders", () => {
