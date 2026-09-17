@@ -3,9 +3,10 @@ import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
 import { access, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
+import { XMLParser } from "fast-xml-parser";
 
 import { XiboPlayerAdapter, XiboWidgetRenderer } from "../dist/developer/xml-module-parser.js";
 
@@ -22,7 +23,46 @@ async function command(args, cwd) {
     });
 }
 
-test("#11: emitted JS/CSS assets resolve and broken references fail explicitly", {
+// Audit generated artifacts in the test, without adding filesystem checks to the renderer.
+async function assetProblems(xml, distRoot) {
+    const document = new XMLParser({
+        ignoreAttributes: false,
+        attributeNamePrefix: ""
+    }).parse(xml);
+    const entries = document.module?.assets?.asset;
+    const assets = entries === undefined ? [] : Array.isArray(entries) ? entries : [entries];
+    const root = resolve(distRoot);
+    const problems = [];
+
+    for (const asset of assets) {
+        const { id, path, mimeType } = asset;
+        if (mimeType !== "text/css" && mimeType !== "text/javascript") continue;
+
+        if (typeof path !== "string" || !path.startsWith("/") || path.includes("\\")) {
+            problems.push({ id, path, reason: "invalid path" });
+            continue;
+        }
+
+        const localPath = resolve(root, path.slice(1));
+        const fromRoot = relative(root, localPath);
+        if (fromRoot === ".." || fromRoot.startsWith(`..${sep}`) || isAbsolute(fromRoot)) {
+            problems.push({ id, path, reason: "invalid path" });
+            continue;
+        }
+
+        try {
+            await access(localPath);
+        }
+        catch (error) {
+            if (error.code !== "ENOENT") throw error;
+            problems.push({ id, path, reason: "missing file" });
+        }
+    }
+
+    return problems;
+}
+
+test("#11: emitted JS/CSS assets resolve and tests detect broken references", {
     timeout: 120_000
 }, async () => {
     const temporary = await mkdtemp(join(tmpdir(), "xibo-asset-paths-"));
@@ -56,22 +96,23 @@ test("#11: emitted JS/CSS assets resolve and broken references fail explicitly",
         const moduleXml = await readFile(moduleXmlPath, "utf8");
         assert.match(moduleXml, /<asset id="assetcheck-js"[^>]*mimeType="text\/javascript"[^>]*path="\/AssetCheck\/assets\/assetcheck\.min\.js"/);
         assert.match(moduleXml, /<asset id="assetcheck-css"[^>]*mimeType="text\/css"[^>]*path="\/AssetCheck\/assets\/assetcheck\.min\.css"/);
+        assert.deepEqual(await assetProblems(moduleXml, distRoot), []);
 
         const renderer = new XiboWidgetRenderer();
         const html = await renderer.render(moduleXmlPath, distRoot, hostTwig);
         assert.match(html, /src="\/AssetCheck\/assets\/assetcheck\.min\.js"/);
         assert.match(html, /href="\/AssetCheck\/assets\/assetcheck\.min\.css"/);
 
+        // An unresolvable placeholder is still a genuine player-adapter error.
         assert.throws(
             () => new XiboPlayerAdapter().decorate("[[assetId=missing-id]]", { assets: [] }),
             /Unresolved Xibo asset: missing-id/
         );
 
         await rm(jsPath);
-        await assert.rejects(
-            renderer.render(moduleXmlPath, distRoot, hostTwig),
-            /Missing Xibo asset 'assetcheck-js': \/AssetCheck\/assets\/assetcheck\.min\.js/
-        );
+        assert.deepEqual(await assetProblems(await readFile(moduleXmlPath, "utf8"), distRoot), [
+            { id: "assetcheck-js", path: "/AssetCheck/assets/assetcheck.min.js", reason: "missing file" }
+        ]);
 
         await writeFile(jsPath, "globalThis.__ASSET_CHECK__ = true;\n");
         await writeFile(
@@ -81,10 +122,9 @@ test("#11: emitted JS/CSS assets resolve and broken references fail explicitly",
                 "/../escape.js"
             )
         );
-        await assert.rejects(
-            renderer.render(moduleXmlPath, distRoot, hostTwig),
-            /Invalid Xibo asset path 'assetcheck-js': \/\.\.\/escape\.js/
-        );
+        assert.deepEqual(await assetProblems(await readFile(moduleXmlPath, "utf8"), distRoot), [
+            { id: "assetcheck-js", path: "/../escape.js", reason: "invalid path" }
+        ]);
     }
     finally {
         await rm(temporary, { recursive: true, force: true });
