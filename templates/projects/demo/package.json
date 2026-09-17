@@ -1,0 +1,14 @@
+{
+  "xibo": {
+    "vite": "src/main.ts",
+    "bounce_template": {
+      "name": "BounceTemplate"
+    }
+  },
+  "dependencies": {
+    "gsap": "^3.14.0"
+  },
+  "devDependencies": {
+    "vite": "^8.3.0"
+  }
+}
