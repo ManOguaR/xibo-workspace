@@ -69,6 +69,8 @@ test("#18: xibo run selects module, individual and combined templates and reject
         assert.notEqual(manifest["template:first_card"], manifest["template:second_card"]);
 
         await mkdir(isolatedTmp);
+        // os.tmpdir() uses TMPDIR/TMP/TEMP on POSIX and TEMP/TMP on Windows.
+        // Set all three so this test never shares xibo-workspace/run with another test.
         process.env.TMPDIR = isolatedTmp;
         process.env.TMP = isolatedTmp;
         process.env.TEMP = isolatedTmp;
