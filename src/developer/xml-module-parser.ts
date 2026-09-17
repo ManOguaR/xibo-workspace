@@ -184,6 +184,7 @@ export class XiboRenderModelBuilder {
         const duration = runtime.duration ?? (
             Number.isFinite(parsedDuration) ? parsedDuration : 0
         );
+        const isDataExpected = runtime.isDataExpected ?? (templateXml !== undefined);
         const data: XmlNode = {
             widgetId,
             templateId,
@@ -193,9 +194,14 @@ export class XiboRenderModelBuilder {
             isRepeatData: true,
             duration,
             calculatedDuration: duration,
-            isDataExpected: runtime.isDataExpected ?? false
+            isDataExpected: isDataExpected
         };
-
+        
+        if (isDataExpected && templateXml) {
+            data.url = null;
+            data.data = { data: [], meta: {} };
+        }
+        
         const sample = cdata(moduleXml.sampleData);
         if (sample !== undefined) {
             try { data.sample = JSON.parse(sample) as unknown; }
