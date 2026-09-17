@@ -32,7 +32,11 @@ test("#18: xibo run selects module, individual and combined templates and reject
     const manifestPath = resolve(project, ".xibo", "manifest.json");
     const packagePath = resolve(project, "package.json");
     const previousCwd = process.cwd();
-    const previousTmp = process.env.TMPDIR;
+    const previousTemp = {
+        TMPDIR: process.env.TMPDIR,
+        TMP: process.env.TMP,
+        TEMP: process.env.TEMP
+    };
     const previousStart = DevServer.prototype.start;
 
     try {
@@ -66,6 +70,8 @@ test("#18: xibo run selects module, individual and combined templates and reject
 
         await mkdir(isolatedTmp);
         process.env.TMPDIR = isolatedTmp;
+        process.env.TMP = isolatedTmp;
+        process.env.TEMP = isolatedTmp;
         process.chdir(project);
         // Selection and rendering are real; only the HTTP listener is disabled to avoid
         // colliding with the separate #17 end-to-end test on Vite's fixed port 9696.
@@ -141,8 +147,10 @@ test("#18: xibo run selects module, individual and combined templates and reject
     finally {
         DevServer.prototype.start = previousStart;
         process.chdir(previousCwd);
-        if (previousTmp === undefined) delete process.env.TMPDIR;
-        else process.env.TMPDIR = previousTmp;
+        for (const [name, value] of Object.entries(previousTemp)) {
+            if (value === undefined) delete process.env[name];
+            else process.env[name] = value;
+        }        
         await rm(temporary, { recursive: true, force: true });
     }
 });
