@@ -78,10 +78,11 @@ test("static template: selected hooks run in the real player in lifecycle order"
         // onTemplateVisible deliberately omitted.
     }
 
+    // Xibo 4.4.x interpolates template IDs into JavaScript function names.
     const definition = new XiboModuleDefinitionBuilder()
         .addModule(new LifecycleModule(), { id: "lifecycle-module", name: "Lifecycle Module" })
-        .addTemplate(new FirstTemplate(), { id: "first-template", name: "First" })
-        .addTemplate(new SecondTemplate(), { id: "second-template", name: "Second" })
+        .addTemplate(new FirstTemplate(), { id: "first_template", name: "First" })
+        .addTemplate(new SecondTemplate(), { id: "second_template", name: "Second" })
         .build();
 
     const temporary = await mkdtemp(resolve(tmpdir(), "xibo-template-lifecycle-"));
@@ -137,7 +138,8 @@ test("static template: selected hooks run in the real player in lifecycle order"
             page = await renderer.render(templatePath, distRoot, host, { templateId });
             assert.match(page, /"isDataExpected":true/);
             assert.match(page, /"url":null/);
-            assert.match(page, /"data":\{"data":\[\],"meta":\{\}\}/);
+            // Twing's json_encode serializes empty Twig maps as [] in this host.
+            assert.match(page, /"data":\{"data":\[\],"meta":(?:\{\}|\[\])\}/);
 
             const profile = resolve(temporary, `chrome-${templateId}`);
             const { stdout } = await exec(browser, [
@@ -154,13 +156,13 @@ test("static template: selected hooks run in the real player in lifecycle order"
             return stdout;
         }
 
-        const first = await renderInBrowser("first-template");
+        const first = await renderInBrowser("first_template");
         assert.match(first, /data-trace="1234"/, "initialize -> template render -> module fallback -> template visible");
         assert.match(first, /data-widget-id="123"/);
         assert.match(first, /function onTemplateRender_first_template/);
         assert.doesNotMatch(first, /onTemplateRender_second_template/);
 
-        const second = await renderInBrowser("second-template");
+        const second = await renderInBrowser("second_template");
         assert.match(second, /data-trace="1B3"/, "only selected template's render hook runs");
         assert.match(second, /function onTemplateRender_second_template/);
         assert.doesNotMatch(second, /onTemplateRender_first_template|onTemplateVisible_first_template/);
