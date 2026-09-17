@@ -1,4 +1,5 @@
 import type { StencilSource } from "../resources/stencil.js";
+import type { XiboPropertyGroups } from "../resources/properties.js";
 
 export type XiboModuleTemplateType =
     | "static"
@@ -6,7 +7,7 @@ export type XiboModuleTemplateType =
 
 export abstract class XiboModuleTemplate {
     abstract readonly type: XiboModuleTemplateType;
-
+    propertyGroups?: XiboPropertyGroups;
     stencil?: StencilSource;
 }
 

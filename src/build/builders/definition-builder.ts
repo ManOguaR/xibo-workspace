@@ -1,4 +1,5 @@
 import { XiboModule, XiboModuleTemplate } from "xibo-modules";
+import { getXiboPropertyDefinitions } from "../properties-build.js";
 import { BootstrapDiscoveryResult, JsonObject, XiboPlayerHook } from "../private-types.js";
 import { CompanionAppDefinition, XiboModuleDefinition, XiboModuleTemplateDefinition, XiboDatatypeDefinition, XiboAssetDefinition } from './module-definition.js';
 
@@ -96,11 +97,16 @@ export class XiboModuleDefinitionBuilder {
             name,
             this.getModuleType(module)
         );
+        const { properties, settings } = getXiboPropertyDefinitions(module);
 
         this.assignMetadata(
             definition,
             metadata
         );
+        
+        definition.settings = settings;
+        definition.properties = properties;
+        definition.propertyGroups = module.propertyGroups;
 
         definition.preview = module.preview?.resolve();
         definition.stencil = module.stencil?.resolve();
@@ -143,12 +149,16 @@ export class XiboModuleDefinitionBuilder {
             name,
             template.type
         );
+        const { properties } = getXiboPropertyDefinitions(template);
         
         this.assignMetadata(
             definition,
             templateMetadata
         );
         
+        definition.properties = properties;
+        definition.propertyGroups = template.propertyGroups;
+
         definition.stencil = template.stencil?.resolve();
         
         definition.onTemplateRender = template.onTemplateRender ? new XiboPlayerHook(template.onTemplateRender) : undefined;

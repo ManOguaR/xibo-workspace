@@ -7,21 +7,6 @@ import { createArrayLoader, createEnvironment } from "twing";
 /** Parsed Xibo XML. No bootstrap/build definitions are read by this renderer. */
 export type XmlNode = Record<string, unknown>;
 
-export interface WidgetRuntime {
-    widgetId?: number;
-    templateId?: string;
-    width?: number;
-    height?: number;
-    duration?: number;
-    numItems?: number;
-    cmsDateFormat?: string;
-    locale?: string;
-    isDataExpected?: boolean;
-    properties?: XmlNode;
-    templateProperties?: XmlNode;
-    settings?: XmlNode;
-}
-
 export interface PlayerResources {
     playerBundle?: string;
     fontBundle?: string;
@@ -173,12 +158,41 @@ export class XiboXmlParser {
     }
 }
 
-/** 2. Xibo XML nodes -> context consumed by widget-html-render.twig. */
+export interface WidgetContext {
+    // Identity
+    widgetId?: number;
+    templateId?: string;
+
+    // Env
+    width?: number;
+    height?: number;
+    locale?: string;
+    cmsDateFormat?: string;
+    
+    // Config
+    settings?: XmlNode;
+    properties?: XmlNode;
+    templateProperties?: XmlNode;
+
+    // State
+    duration?: number;
+    // calculatedDuration!: number;
+    numItems?: number;
+    // isValid!: boolean;
+    // isRepeatData!: boolean;
+    isDataExpected?: boolean;
+
+    // Data
+    sample?: unknown;
+    // url!: string | null;
+    // data!: unknown;
+}
+
 export class XiboRenderModelBuilder {
     public async build(
         moduleXml: XmlNode,
         templateXml: XmlNode | undefined,
-        runtime: WidgetRuntime = {}
+        runtime: WidgetContext = {}
     ): Promise<XmlNode> {
         const widgetId = runtime.widgetId ?? 123;
         const templateId = text(templateXml?.id) ?? text(moduleXml.id)!;
@@ -401,7 +415,7 @@ export class XiboWidgetRenderer {
         xmlPath: string,
         distRoot: string,
         hostTwigPath: string,
-        runtime: WidgetRuntime = {},
+        runtime: WidgetContext = {},
         resources: PlayerResources = {}
     ): Promise<string> {
         const input = this.xml.parseInput(

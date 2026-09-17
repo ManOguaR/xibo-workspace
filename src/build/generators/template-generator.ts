@@ -1,6 +1,12 @@
 import { XiboModuleTemplateDefinition } from "../xibo-build.js";
-
-import { escapeXml, generateStencilContent, generateAssets, generateHook } from "./xml-writer.js";
+import { 
+    escapeXml, 
+    generatePropertyCollection, 
+    generatePropertyGroups,
+    generateStencilContent, 
+    generateAssets, 
+    generateHook 
+} from "./xml-writer.js";
 
 export class XiboModuleTemplateXmlGenerator {
 
@@ -84,6 +90,18 @@ export class XiboModuleTemplateXmlGenerator {
         const indent = "        ";
         const childIndent = "            ";
 
+        const properties = generatePropertyCollection(
+            "properties",
+            definition.properties,
+            indent,
+            childIndent
+        );
+        const propertyGroups = generatePropertyGroups(
+            definition.propertyGroups,
+            indent,
+            childIndent
+        );
+
         const stencil = generateStencilContent(
             "stencil",
             definition.stencil,
@@ -122,14 +140,11 @@ export class XiboModuleTemplateXmlGenerator {
         <dataType>${escapeXml(resolvedDatatypeId)}</dataType>
         <title>${escapeXml(definition.name)}</title>
 ${description}${icon}${thumbnail}${isVisible}${showIn}${initialSize}${hasDimensions}${canRotate}
+${properties}
 ${stencil}
-
 ${assets}
-
 ${onTemplateRender}
-
 ${onTemplateVisible}
-
 ${onElementParseData}
     </template>`;
     }

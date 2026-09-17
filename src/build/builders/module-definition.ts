@@ -1,4 +1,5 @@
-import { XiboModuleTemplateType } from "xibo-modules";
+import { XiboModuleTemplateType, XiboPropertyGroups } from "xibo-modules";
+import { XiboPropertyMetadata } from "../properties-build.js";
 import { StencilResult, XiboPlayerHook } from "../private-types.js";
 
 export type XiboShowIn =
@@ -33,6 +34,10 @@ export class XiboModuleDefinition {
 
     public datatypeDefinition?: XiboDatatypeDefinition;
     public cacheKey?: string;
+    
+    public settings: XiboPropertyMetadata[] = [];
+    public properties: XiboPropertyMetadata[] = [];
+    public propertyGroups?: XiboPropertyGroups;
 
     public preview?: StencilResult;
     public stencil?: StencilResult;
@@ -55,11 +60,6 @@ export class XiboModuleDefinition {
         public type: string
     ) {
     }
-
-    // 
-    // settings
-    // properties
-    // propertyGroups
 
     // 
     // fallbackData
@@ -87,6 +87,9 @@ export class XiboModuleTemplateDefinition {
     public hasDimensions: boolean = true;
     public canRotate: boolean = false;
 
+    public properties: XiboPropertyMetadata[] = [];
+    public propertyGroups?: XiboPropertyGroups;
+
     public stencil?: StencilResult;
     public assets: XiboAssetDefinition[] = [];
 
@@ -100,10 +103,6 @@ export class XiboModuleTemplateDefinition {
         public type: XiboModuleTemplateType
     ) {
     }
-
-    // 
-    // properties
-    // propertyGroups
 
     // 
     // extends

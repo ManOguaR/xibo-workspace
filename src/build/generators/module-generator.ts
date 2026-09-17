@@ -2,6 +2,8 @@ import { XiboModuleDefinition } from "../xibo-build.js";
 
 import {
     escapeXml,
+    generatePropertyCollection,
+    generatePropertyGroups,
     generateStencilContent,
     generateAssets,
     generateHook
@@ -62,7 +64,7 @@ export class XiboModuleXmlGenerator {
 
         const settings = this.generateSettings(definition);
         const properties = this.generateProperties(definition);
-        const propertyGroups = this.generatePropertyGroups(definition);
+        const propertyGroups = generatePropertyGroups(definition.propertyGroups);
         const requiredElements = this.generateRequiredElements(definition);
 
         const preview = generateStencilContent("preview", definition.preview);
@@ -136,23 +138,21 @@ ${sampleData}
     }
 
     private generateSettings(
-        _definition: XiboModuleDefinition
+        definition: XiboModuleDefinition
     ): string {
-        return `\t<settings>
-\t</settings>`;
+        return generatePropertyCollection(
+            "settings",
+            definition.settings
+        );
     }
-
+    
     private generateProperties(
-        _definition: XiboModuleDefinition
+        definition: XiboModuleDefinition
     ): string {
-        return `\t<properties>
-\t</properties>`;
-    }
-
-    private generatePropertyGroups(
-        _definition: XiboModuleDefinition
-    ): string {
-        return "";
+        return generatePropertyCollection(
+            "properties",
+            definition.properties
+        );
     }
 
     private generateRequiredElements(

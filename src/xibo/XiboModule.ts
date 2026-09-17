@@ -1,9 +1,10 @@
 import type { StencilSource } from "../resources/stencil.js";
+import type { XiboPropertyGroups } from "../resources/properties.js";
 
 export abstract class XiboModule {
-    stencil?: StencilSource;
-
+    propertyGroups?: XiboPropertyGroups;
     preview?: StencilSource;
+    stencil?: StencilSource;
 }    
 
 export interface XiboModule {

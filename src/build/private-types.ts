@@ -59,6 +59,8 @@ export class BootstrapDiscoveryResult {
 
 export interface StencilResult extends StencilOptions {
     kind: "twig" | "hbs";
+    head?: string;
+    style?: string;
     content: string;
     id?: string;
 }
