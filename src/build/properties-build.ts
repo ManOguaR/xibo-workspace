@@ -36,6 +36,10 @@ export function registerProperty(
         const id = context.name;
 
         context.addInitializer(function () {
+            if (collection === "settings" && !(this instanceof XiboModule)) {
+                throw new Error(`@XiboSetting("${id}") can only be used in XiboModule.`);
+            }
+            
             let collections = registry.get(this);
 
             if (collections === undefined) {
