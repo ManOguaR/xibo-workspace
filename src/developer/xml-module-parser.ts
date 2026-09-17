@@ -1,5 +1,5 @@
-import { readdir, readFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { access, readdir, readFile } from "node:fs/promises";
+import { isAbsolute, relative, resolve } from "node:path";
 import { XMLParser } from "fast-xml-parser";
 import { SyntaxValidator } from "fast-xml-validator";
 import { createArrayLoader, createEnvironment } from "twing";
@@ -422,8 +422,39 @@ export class XiboWidgetRenderer {
 
         const hostTwig = await readFile(hostTwigPath, "utf8");
         const model = await this.models.build(moduleXml, templateXml, runtime);
+        await this.validateAssets(model, distRoot);
         const html = await this.twig.render(hostTwig, model);
         return this.player.decorate(html, model, resources);
+    }
+
+    private async validateAssets(
+        model: XmlNode,
+        distRoot: string
+    ): Promise<void> {
+        const root = resolve(distRoot);
+
+        for (const asset of array(model.assets) as PlayerAsset[]) {
+            const path = asset.path;
+            if (!path.startsWith("/") || path.includes("\\")) {
+                throw new Error(`Invalid Xibo asset path '${asset.id}': ${path}`);
+            }
+
+            const localPath = resolve(root, path.slice(1));
+            const fromRoot = relative(root, localPath);
+            if (fromRoot.startsWith("..") || isAbsolute(fromRoot)) {
+                throw new Error(`Invalid Xibo asset path '${asset.id}': ${path}`);
+            }
+
+            try {
+                await access(localPath);
+            }
+            catch (error) {
+                if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+                    throw new Error(`Missing Xibo asset '${asset.id}': ${path}`);
+                }
+                throw error;
+            }
+        }
     }
 
     private async resolveModule(
