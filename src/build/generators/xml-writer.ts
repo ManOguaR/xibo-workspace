@@ -107,8 +107,7 @@ export function generateHook(
     hook?: XiboPlayerHook,
     indent: string = "\t"
 ): string {
-
-    const content = hook?.();
+    const content = hook?.content;
 
     if (!content) {
         return "";

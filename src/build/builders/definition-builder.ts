@@ -1,3 +1,4 @@
+import { XiboPlayerHook } from './../../resources/hooks';
 import { XiboModule, XiboModuleTemplate } from "xibo-modules";
 
 import { BootstrapDiscoveryResult, JsonObject } from "../private-types.js";
@@ -107,11 +108,11 @@ export class XiboModuleDefinitionBuilder {
         definition.preview = module.preview?.resolve();
         definition.stencil = module.stencil?.resolve();
 
-        definition.onInitialize = module.onInitialize;
-        definition.onDataLoad = module.onDataLoad;
-        definition.onParseData = module.onParseData;
-        definition.onRender = module.onRender;
-        definition.onVisible = module.onVisible;
+        definition.onInitialize = module.onInitialize ? new XiboPlayerHook(module.onInitialize) : undefined;
+        definition.onDataLoad = module.onDataLoad ? new XiboPlayerHook(module.onDataLoad) : undefined;
+        definition.onParseData = module.onParseData ? new XiboPlayerHook(module.onParseData) : undefined;
+        definition.onRender = module.onRender ? new XiboPlayerHook(module.onRender) : undefined;
+        definition.onVisible = module.onVisible ? new XiboPlayerHook(module.onVisible) : undefined;
 
         this.moduleDefinition = definition;
         this.xiboModule = module;
@@ -153,9 +154,9 @@ export class XiboModuleDefinitionBuilder {
         
         definition.stencil = template.stencil?.resolve();
         
-        definition.onTemplateRender = template.onTemplateRender;
-        definition.onTemplateVisible = template.onTemplateVisible;
-        definition.onElementParseData = template.onElementParseData;
+        definition.onTemplateRender = template.onTemplateRender ? new XiboPlayerHook(template.onTemplateRender) : undefined;
+        definition.onTemplateVisible = template.onTemplateVisible ? new XiboPlayerHook(template.onTemplateVisible) : undefined;
+        definition.onElementParseData = template.onElementParseData ? new XiboPlayerHook(template.onElementParseData) : undefined;
         
         moduleDefinition.templateDefinitions.push(definition);
         
