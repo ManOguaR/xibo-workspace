@@ -1,5 +1,5 @@
 import { readdir, readFile, stat } from "node:fs/promises";
-import { isAbsolute, relative, resolve } from "node:path";
+import { isAbsolute, relative, resolve, sep } from "node:path";
 import { XMLParser } from "fast-xml-parser";
 
 const parser = new XMLParser({
@@ -51,13 +51,13 @@ export async function validateDistAssets(distRoot: string): Promise<void> {
                     // Reject traversal, query strings, encoded or Windows separators.
                     const segments = typeof path === "string" ? path.split("/") : [];
                     if (typeof path !== "string" || !/^\/[A-Za-z0-9._/-]+$/.test(path)
-                        || segments.some(segment => segment === "" && segments.indexOf(segment) !== 0
+                        || segments.some((segment, index) => (index !== 0 && !segment)
                             || segment === "." || segment === "..")) {
                         throw new Error(`Invalid Xibo asset path '${String(path)}' (id '${id}', XML '${xmlFile.name}').`);
                     }
                     const absolute = resolve(distRoot, `.${path}`);
                     const relativePath = relative(distRoot, absolute);
-                    if (!relativePath || relativePath === ".." || relativePath.startsWith(`..${requireSeparator()}`)
+                    if (!relativePath || relativePath === ".." || relativePath.startsWith(`..${sep}`)
                         || isAbsolute(relativePath)) {
                         throw new Error(`Invalid Xibo asset path '${path}' (id '${id}', XML '${xmlFile.name}').`);
                     }
@@ -73,8 +73,4 @@ export async function validateDistAssets(distRoot: string): Promise<void> {
             }
         }
     }
-}
-
-function requireSeparator(): string {
-    return process.platform === "win32" ? "\\" : "/";
 }
