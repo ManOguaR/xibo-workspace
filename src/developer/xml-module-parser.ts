@@ -144,6 +144,14 @@ export class XiboXmlParser {
             .map(value => object(value));
         if (templates.length === 0) throw new Error("Xibo template XML has no <template>.");
 
+        const seenIds = new Set<string>();
+        for (const item of templates) {
+            const id = text(item.id);
+            if (!id) throw new Error("Xibo template XML has a template without <id>.");
+            if (seenIds.has(id)) throw new Error(`Duplicate Xibo template id: ${id}`);
+            seenIds.add(id);
+        }
+
         if (templateId !== undefined) {
             const selected = templates.find(item => text(item.id) === templateId);
             if (!selected) throw new Error(`Xibo template not found: ${templateId}`);
