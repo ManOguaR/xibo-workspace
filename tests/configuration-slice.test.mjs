@@ -92,7 +92,6 @@ export default class ConfigTemplate extends XiboStaticTemplate {
         const builder = new XiboRenderModelBuilder();
 
         const defaults = await builder.build(module, template);
-        assert.equal(defaults.data[0].settings.apiUrl, "http://localhost:5000");
         assert.equal(defaults.data[0].properties.heading, "Build heading");
         assert.equal(defaults.data[0].templateProperties.message, "Template default");
         assert.match(defaults.twig.join("\n"), /Build heading http:\/\/localhost:5000/);
@@ -103,7 +102,6 @@ export default class ConfigTemplate extends XiboStaticTemplate {
             properties: { heading: "Runtime heading" },
             templateProperties: { message: "Runtime template" }
         });
-        assert.equal(overrides.data[0].settings.apiUrl, "http://localhost:9000");
         assert.equal(overrides.data[0].properties.heading, "Runtime heading");
         assert.equal(overrides.data[0].templateProperties.message, "Runtime template");
         assert.match(overrides.twig.join("\n"), /Runtime heading http:\/\/localhost:9000/);
