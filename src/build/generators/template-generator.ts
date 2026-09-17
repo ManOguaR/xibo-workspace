@@ -141,6 +141,7 @@ export class XiboModuleTemplateXmlGenerator {
         <title>${escapeXml(definition.name)}</title>
 ${description}${icon}${thumbnail}${isVisible}${showIn}${initialSize}${hasDimensions}${canRotate}
 ${properties}
+${propertyGroups}
 ${stencil}
 ${assets}
 ${onTemplateRender}
