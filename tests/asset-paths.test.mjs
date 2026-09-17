@@ -8,12 +8,15 @@ import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { createServer } from "vite";
 
+import { validateDistAssets } from "../dist/developer/asset-validator.js";
 import { XiboPlayerAdapter, XiboWidgetRenderer, XiboXmlParser } from "../dist/developer/xml-module-parser.js";
 
 const exec = promisify(execFile);
 const repository = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const cli = resolve(repository, "dist", "cli.js");
 const host = resolve(repository, "src", "developer", "xibo-player", "widget-html-render.twig");
+const runUrl = new URL("../dist/commands/run.js", import.meta.url).href;
+const devServerUrl = new URL("../dist/developer/dev-server.js", import.meta.url).href;
 
 async function command(args, cwd) {
     await exec(process.execPath, [cli, ...args], {
@@ -29,6 +32,7 @@ test("#11: compiled JS/CSS resolve to served files; missing IDs, files and inval
     const temporary = await mkdtemp(join(tmpdir(), "xibo-assets-"));
     const project = resolve(temporary, "project");
     const distRoot = resolve(project, ".xibo", "dist");
+    const isolatedTmp = resolve(temporary, "runtime-tmp");
     let server;
 
     try {
@@ -59,10 +63,10 @@ test("#11: compiled JS/CSS resolve to served files; missing IDs, files and inval
         const fileFor = asset => resolve(distRoot, `.${asset.path}`);
         assert.match(await readFile(fileFor(js), "utf8"), /XML11_JS_LOADED/);
         assert.match(await readFile(fileFor(css), "utf8"), /XML11_CSS_LOADED/);
+        await validateDistAssets(distRoot);
 
         const renderer = new XiboWidgetRenderer();
-        const render = () => renderer.render(manifest.module, distRoot, host);
-        const html = await render();
+        const html = await renderer.render(manifest.module, distRoot, host);
         assert.ok(html.includes(`src="${js.path}"`), "rendered JS URL must match built XML");
         assert.ok(html.includes(`href="${css.path}"`), "rendered CSS URL must match built XML");
         assert.doesNotMatch(html, /\[\[assetId=/);
@@ -89,14 +93,39 @@ test("#11: compiled JS/CSS resolve to served files; missing IDs, files and inval
             /Unresolved Xibo asset: unknown-xml11/
         );
 
+        // Exercise the public run pipeline without Vite's fixed port or a shared temp folder.
+        await mkdir(isolatedTmp);
+        const runScript = `
+import { runRunCommand } from ${JSON.stringify(runUrl)};
+import { DevServer } from ${JSON.stringify(devServerUrl)};
+DevServer.prototype.start = async function () {};
+await runRunCommand([]);
+`;
+        const runWithoutListener = () => exec(process.execPath,
+            ["--input-type=module", "--eval", runScript], {
+                cwd: project,
+                env: { ...process.env, TMPDIR: isolatedTmp, TMP: isolatedTmp, TEMP: isolatedTmp },
+                timeout: 90_000,
+                maxBuffer: 4 * 1024 * 1024
+            });
+        await runWithoutListener();
+
         await rm(fileFor(js));
-        await assert.rejects(render(), new RegExp(`Missing Xibo asset.*${js.id}`));
+        await assert.rejects(validateDistAssets(distRoot), new RegExp(`Missing Xibo asset.*${js.id}`));
+        await assert.rejects(runWithoutListener(), error => {
+            assert.match(error.stderr, new RegExp(`Missing Xibo asset.*${js.id}`));
+            return true;
+        });
 
         // A malformed URL must not be repaired or resolved outside the current build.
         const xml = await readFile(manifest.module, "utf8");
         assert.ok(xml.includes(`path="${js.path}"`));
         await writeFile(manifest.module, xml.replace(`path="${js.path}"`, 'path="../escaped.js"'));
-        await assert.rejects(render(), new RegExp(`Invalid Xibo asset path.*${js.id}`));
+        await assert.rejects(validateDistAssets(distRoot), new RegExp(`Invalid Xibo asset path.*${js.id}`));
+        await assert.rejects(runWithoutListener(), error => {
+            assert.match(error.stderr, new RegExp(`Invalid Xibo asset path.*${js.id}`));
+            return true;
+        });
     }
     finally {
         if (server) await server.close();
