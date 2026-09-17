@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
+import { XMLParser } from "fast-xml-parser";
 
 import { runRunCommand } from "../dist/commands/run.js";
 import { DevServer } from "../dist/developer/dev-server.js";
@@ -20,6 +21,13 @@ async function command(args, cwd) {
         timeout: 90_000,
         maxBuffer: 4 * 1024 * 1024
     });
+}
+
+// Inspect generated XML directly; xibo run is responsible for selection, not document-wide auditing.
+function templateIds(xml) {
+    const entries = new XMLParser({ parseTagValue: false }).parse(xml).templates?.template;
+    return (Array.isArray(entries) ? entries : entries === undefined ? [] : [entries])
+        .map(template => template.id);
 }
 
 test("#18: xibo run selects module, individual and combined templates and rejects invalid IDs", {
@@ -124,6 +132,9 @@ test("#18: xibo run selects module, individual and combined templates and reject
         const combined = await readFile(manifest.templates, "utf8");
         assert.match(combined, /<id>first_card<\/id>/);
         assert.match(combined, /<id>second_card<\/id>/);
+        const generatedIds = templateIds(combined);
+        assert.deepEqual(generatedIds, ["first_card", "second_card"]);
+        assert.equal(new Set(generatedIds).size, generatedIds.length, "generated template IDs must be unique");
 
         assertSelected(await rendered([]), "module");
         assertSelected(await rendered(["first_card"]), "first");
@@ -138,13 +149,15 @@ test("#18: xibo run selects module, individual and combined templates and reject
         manifest.templates = correctCombinedPath;
         await writeFile(manifestPath, JSON.stringify(manifest));
 
-        // Invalid XML IDs must be rejected instead of silently taking the first match.
+        // Audit invalid fixtures here, not by forcing xibo run to validate every template.
         const firstNode = combined.match(/<template>[\s\S]*?<\/template>/)?.[0];
         assert.ok(firstNode);
-        await writeFile(correctCombinedPath, combined.replace("</templates>", `${firstNode}</templates>`));
-        await assert.rejects(runRunCommand(["first_card"]), /Duplicate Xibo template id: first_card/);
-        await writeFile(correctCombinedPath, combined.replace("<id>first_card</id>", ""));
-        await assert.rejects(runRunCommand(["first_card"]), /Xibo template XML has a template without <id>/);
+        const duplicateIds = templateIds(combined.replace("</templates>", `${firstNode}</templates>`));
+        assert.deepEqual(duplicateIds, ["first_card", "second_card", "first_card"]);
+        assert.notEqual(new Set(duplicateIds).size, duplicateIds.length, "duplicate fixture must contain repeated IDs");
+
+        const missingIds = templateIds(combined.replace("<id>first_card</id>", ""));
+        assert.deepEqual(missingIds, [undefined, "second_card"]);
     }
     finally {
         DevServer.prototype.start = previousStart;
@@ -152,7 +165,7 @@ test("#18: xibo run selects module, individual and combined templates and reject
         for (const [name, value] of Object.entries(previousTemp)) {
             if (value === undefined) delete process.env[name];
             else process.env[name] = value;
-        }        
+        }
         await rm(temporary, { recursive: true, force: true });
     }
 });
