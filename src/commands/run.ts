@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { basename, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DevServer } from "../developer/dev-server.js";
+import { validateDistAssets } from "../developer/asset-validator.js";
 import { XiboWidgetRenderer, XiboXmlParser } from "../developer/xml-module-parser.js";
 
 
@@ -30,6 +31,9 @@ export async function runRunCommand(
         runRoot,
         targetId
     );
+
+    // Rechazar referencias rotas antes de servir un HTML aparentemente válido.
+    await validateDistAssets(runRoot);
 
     // Recursos propios del entorno de desarrollo.
     const packageRoot = resolve(
@@ -147,7 +151,6 @@ async function resolveTarget(
 
 
 async function prepareRunDirectory(): Promise<string> {
-
     const runRoot = resolve(
         tmpdir(),
         "xibo-workspace",
