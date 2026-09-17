@@ -8,9 +8,9 @@ export abstract class XiboModule {
 }    
 
 export interface XiboModule {
-    onInitialize?(id: string, target: HTMLElement, properties: any, meta: any): void;
+    onInitialize?(id: string, target: { 0: HTMLElement }, properties: any, meta: any): void;
     onParseData?(item: any, properties: any, meta: any): void;
     onDataLoad?(item: any, meta: any, properties: any, isDataReady: boolean): void;
-    onRender?(id: string, target: HTMLElement, items: any, properties: any, meta: any): void;
-    onVisible?(id: string, target: HTMLElement, items: any, properties: any, meta: any): void;
+    onRender?(id: string, target: { 0: HTMLElement }, items: any, properties: any, meta: any): void;
+    onVisible?(id: string, target: { 0: HTMLElement }, items: any, properties: any, meta: any): void;
 }

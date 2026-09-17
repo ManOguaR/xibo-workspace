@@ -12,8 +12,8 @@ export abstract class XiboModuleTemplate {
 }
 
 export interface XiboModuleTemplate {
-    onTemplateRender?(id: string, target: HTMLElement, items: any, properties: any, meta: any): void;
-    onTemplateVisible?(id: string, target: HTMLElement, items: any, properties: any, meta: any): void;
+    onTemplateRender?(id: string, target: { 0: HTMLElement }, items: any, properties: any, meta: any): void;
+    onTemplateVisible?(id: string, target: { 0: HTMLElement }, items: any, properties: any, meta: any): void;
     onElementParseData?(value: any, properties: any): void;
 }
 
