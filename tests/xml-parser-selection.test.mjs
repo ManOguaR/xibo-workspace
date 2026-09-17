@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { XMLParser } from "fast-xml-parser";
 
 import {
     XiboModuleDefinition,
@@ -33,6 +34,29 @@ function fixtures() {
         first,
         second
     };
+}
+
+// Audit the generated document in the test, without imposing global checks on the runtime parser.
+function templateIdProblems(xml) {
+    const document = new XMLParser({ parseTagValue: false }).parse(xml);
+    const entries = document.templates?.template ?? document.template;
+    const templates = entries === undefined ? [] : Array.isArray(entries) ? entries : [entries];
+    const seen = new Set();
+    const problems = [];
+
+    for (const [index, template] of templates.entries()) {
+        const id = template?.id;
+        if (typeof id !== "string" || !id.trim()) {
+            problems.push({ kind: "missing", index });
+        }
+        else if (seen.has(id)) {
+            problems.push({ kind: "duplicate", id, index });
+        }
+        else {
+            seen.add(id);
+        }
+    }
+    return problems;
 }
 
 test("#53: generated module, individual and combined XML select the right render model", async () => {
@@ -73,7 +97,7 @@ test("#53: generated module, individual and combined XML select the right render
     ]);
 });
 
-test("#53: malformed XML, absent and duplicate IDs fail predictably", () => {
+test("#53: parser rejects unselectable and malformed XML; tests audit all template IDs", () => {
     const { moduleXml, singleXml, combinedXml } = fixtures();
     const parser = new XiboXmlParser();
 
@@ -81,13 +105,24 @@ test("#53: malformed XML, absent and duplicate IDs fail predictably", () => {
     assert.throws(() => parser.parseInput(singleXml, "second_card"), /template not found: second_card/);
     assert.throws(() => parser.parseInput(combinedXml, "unknown"), /template not found: unknown/);
     assert.throws(() => parser.parseInput(moduleXml.replace("<id>selection-module</id>", "")), /module XML has no/);
-    assert.throws(() => parser.parseInput(singleXml.replace("<id>first_card</id>", "")), /template without <id>/);
-    assert.throws(() => parser.parseInput(combinedXml.replace("<id>second_card</id>", ""), "first_card"), /template without <id>/);
+
+    assert.deepEqual(templateIdProblems(singleXml), []);
+    assert.deepEqual(templateIdProblems(combinedXml), []);
+    assert.deepEqual(
+        templateIdProblems(singleXml.replace("<id>first_card</id>", "")),
+        [{ kind: "missing", index: 0 }]
+    );
+
+    const missingOther = combinedXml.replace("<id>second_card</id>", "");
+    assert.deepEqual(templateIdProblems(missingOther), [{ kind: "missing", index: 1 }]);
+    assert.equal(parser.parseInput(missingOther, "first_card").node.id, "first_card");
 
     const firstNode = combinedXml.match(/<template>[\s\S]*?<\/template>/)?.[0];
     assert.ok(firstNode, "fixture must contain generated template XML");
     const duplicate = combinedXml.replace("</templates>", `${firstNode}</templates>`);
-    assert.throws(() => parser.parseInput(duplicate, "first_card"), /Duplicate Xibo template id: first_card/);
+    assert.deepEqual(templateIdProblems(duplicate), [
+        { kind: "duplicate", id: "first_card", index: 2 }
+    ]);
 
     assert.throws(() => parser.parseInput("<unsupported><id>anything</id></unsupported>"), /Unsupported Xibo XML document/);
     assert.throws(() => parser.parseInput("<templates></templates>"), /template XML has no <template>/);
