@@ -116,7 +116,8 @@ export default class FeatureTemplate extends XiboStaticTemplate {
         for (let attempt = 0; attempt < 100; attempt++) {
             if (child.exitCode !== null) break;
             try {
-                const response = await fetch("http://127.0.0.1:9696/", {
+                // Vite's default localhost binding may be IPv6-only on CI.
+                const response = await fetch("http://localhost:9696/", {
                     signal: AbortSignal.timeout(500)
                 });
                 if (response.ok) {
