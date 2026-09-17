@@ -1,6 +1,4 @@
-import type { XiboPlayerHook } from "xibo-modules";
-
-import type { StencilResult } from "../private-types.js";
+import type { StencilResult, XiboPlayerHook } from "../private-types.js";
 import type { XiboAssetDefinition } from "../xibo-build.js";
 
 export function escapeXml(value: string): string {

@@ -1,9 +1,7 @@
 import { cp, mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
-
 import { tmpdir } from "node:os";
 import { basename, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-
 import { DevServer } from "../developer/dev-server.js";
 import { XiboWidgetRenderer, XiboXmlParser } from "../developer/xml-module-parser.js";
 

@@ -1,23 +1,7 @@
-import {
-    cp,
-    mkdir,
-    readdir,
-    readFile,
-    writeFile
-} from "node:fs/promises";
-
-import {
-    dirname,
-    resolve
-} from "node:path";
-
-import {
-    fileURLToPath
-} from "node:url";
-
-import {
-    addCompanionApp
-} from "./application.js";
+import { cp, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { addCompanionApp } from "./application.js";
 
 export async function runNewCommand(
     args: string[]

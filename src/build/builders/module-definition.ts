@@ -1,7 +1,5 @@
-import { StencilResult } from "../private-types.js";
-import { XiboPlayerHook } from "xibo-modules";
-
-import { XiboModuleTemplateType } from "../../xibo/XiboModuleTemplate.js";
+import { XiboModuleTemplateType } from "xibo-modules";
+import { StencilResult, XiboPlayerHook } from "../private-types.js";
 
 export type XiboShowIn =
     | "none"

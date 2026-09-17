@@ -1,7 +1,5 @@
 import { access, mkdir, readFile, writeFile } from "node:fs/promises";
-
 import { resolve } from "node:path";
-
 import { build as viteBuild } from "vite";
 
 interface PackageJson {

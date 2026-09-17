@@ -4,8 +4,8 @@ import { extname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { XiboModule, XiboModuleTemplate } from "xibo-modules";
-import { BootstrapValidator } from "../validation/bootstrap-validator.js"
 import { BootstrapDiscoveryResult, ValidationSeverity } from "../private-types.js";
+import { BootstrapValidator } from "../validation/bootstrap-validator.js"
 
 import { JsonObject, MetadataMerger } from "./metadata-merger.js";
 

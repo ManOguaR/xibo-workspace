@@ -1,4 +1,4 @@
-import { XiboDatatypeDefinition } from "../builders/module-definition.js";
+import { XiboDatatypeDefinition } from "../xibo-build.js";
 
 export class XiboDatatypeXmlGenerator {
 

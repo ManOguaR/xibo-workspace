@@ -1,8 +1,5 @@
-import { XiboPlayerHook } from './../../resources/hooks';
 import { XiboModule, XiboModuleTemplate } from "xibo-modules";
-
-import { BootstrapDiscoveryResult, JsonObject } from "../private-types.js";
-
+import { BootstrapDiscoveryResult, JsonObject, XiboPlayerHook } from "../private-types.js";
 import { CompanionAppDefinition, XiboModuleDefinition, XiboModuleTemplateDefinition, XiboDatatypeDefinition, XiboAssetDefinition } from './module-definition.js';
 
 export class XiboModuleDefinitionBuilder {

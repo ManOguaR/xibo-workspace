@@ -1,6 +1,5 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-
 import { StencilResult } from '../build/private-types.js';
 
 export interface StencilOptions {

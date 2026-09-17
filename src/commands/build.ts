@@ -1,7 +1,6 @@
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { resolve, extname } from "node:path";
 import { build as viteBuild } from "vite";
-
 import { 
     BootstrapDiscovery, 
     JsonObject,

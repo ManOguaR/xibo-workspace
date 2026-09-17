@@ -1,4 +1,4 @@
-import { XiboModuleTemplateDefinition } from "../builders/module-definition.js";
+import { XiboModuleTemplateDefinition } from "../xibo-build.js";
 
 import { escapeXml, generateStencilContent, generateAssets, generateHook } from "./xml-writer.js";
 
