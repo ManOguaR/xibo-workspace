@@ -23,6 +23,8 @@ import {
     XiboDatatypeXmlGenerator
 } from "../dist/build/generators/datatype-generator.js";
 
+import { XiboPlayerHook } from "../dist/build/private-types.js";
+
 const parser = new XMLParser({
     ignoreAttributes: false,
     attributeNamePrefix: "@_",
@@ -32,7 +34,6 @@ const parser = new XMLParser({
 });
 
 test("datatype: emits explicit empty fields", () => {
-
     const definition = new XiboDatatypeDefinition(
         "xibomodules",
         "XiboModules"
@@ -50,7 +51,6 @@ test("datatype: emits explicit empty fields", () => {
 });
 
 test("datatype: emits fields and escapes XML", () => {
-
     const definition = new XiboDatatypeDefinition(
         "xibomodules",
         "XiboModules"
@@ -80,9 +80,15 @@ test("datatype: emits fields and escapes XML", () => {
 });
 
 test("module and template: reuse stencil, assets and hooks", () => {
-
     const content = '<div>{{ player }} ]]> & friends</div>';
     const hook = 'console.log("render ]]>");';
+    const playerHook = new XiboPlayerHook({
+        onRender() {
+            console.log("render ]]>");
+        }
+    }.onRender);
+
+    assert.equal(playerHook.content, hook);
 
     const stencil = {
         kind: "twig",
@@ -111,7 +117,7 @@ test("module and template: reuse stencil, assets and hooks", () => {
 
     moduleDefinition.stencil = stencil;
     moduleDefinition.assets.push(asset);
-    moduleDefinition.onRender = () => hook;
+    moduleDefinition.onRender = playerHook;
 
     const templateDefinition = new XiboModuleTemplateDefinition(
         "xibomodules-static",
@@ -128,7 +134,7 @@ test("module and template: reuse stencil, assets and hooks", () => {
 
     templateDefinition.stencil = stencil;
     templateDefinition.assets.push(asset);
-    templateDefinition.onTemplateRender = () => hook;
+    templateDefinition.onTemplateRender = playerHook;
 
     const moduleXml = new XiboModuleXmlGenerator()
         .generate(moduleDefinition);
@@ -169,7 +175,6 @@ test("module and template: reuse stencil, assets and hooks", () => {
 });
 
 test("template: requires a resolved datatype", () => {
-
     const definition = new XiboModuleTemplateDefinition(
         "orphan",
         "Orphan",

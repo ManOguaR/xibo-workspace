@@ -4,28 +4,43 @@ import { XMLParser, XMLValidator } from "fast-xml-parser";
 
 import { XiboModuleDefinition } from "../dist/build/builders/module-definition.js";
 import { XiboModuleXmlGenerator } from "../dist/build/generators/module-generator.js";
+import { XiboPlayerHook } from "../dist/build/private-types.js";
 
 const parser = new XMLParser({
     trimValues: false,
     parseTagValue: false
 });
 
-for (const [name, marker] of [
-    ["ordinary source", "normal"],
-    ["source containing the CDATA terminator", "]]> inside ]]> source"]
+const hookMethods = {
+    ordinary() {
+        initialize("normal");
+    },
+    terminator() {
+        initialize("]]> inside ]]> source");
+    }
+};
+
+const hookNames = [
+    "onInitialize",
+    "onDataLoad",
+    "onParseData",
+    "onRender",
+    "onVisible"
+];
+
+for (const [name, marker, method] of [
+    ["ordinary source", "normal", hookMethods.ordinary],
+    ["source containing the CDATA terminator", "]]> inside ]]> source", hookMethods.terminator]
 ]) {
     test(`generated XML preserves ${name} after parsing`, () => {
         const stencilContent = `<div data-value="${marker}">{{ settings.value }}</div>`;
         const previewContent = `<p>{{title}} ${marker}</p>`;
         const head = `<script>const marker = ${JSON.stringify(marker)};</script>`;
         const style = `/* ${marker} */ .test { color: red; }`;
-        const hooks = {
-            onInitialize: `initialize(${JSON.stringify(marker)});`,
-            onDataLoad: `load(${JSON.stringify(marker)});`,
-            onParseData: `parse(${JSON.stringify(marker)});`,
-            onRender: `render(${JSON.stringify(marker)});`,
-            onVisible: `visible(${JSON.stringify(marker)});`
-        };
+        const hookContent = `initialize(${JSON.stringify(marker)});`;
+        const hook = new XiboPlayerHook(method);
+
+        assert.equal(hook.content, hookContent);
 
         const definition = new XiboModuleDefinition(
             "cdata-test",
@@ -45,8 +60,8 @@ for (const [name, marker] of [
             content: previewContent
         };
 
-        for (const [hook, content] of Object.entries(hooks)) {
-            definition[hook] = () => content;
+        for (const name of hookNames) {
+            definition[name] = hook;
         }
 
         const xml = new XiboModuleXmlGenerator().generate(definition);
@@ -64,8 +79,8 @@ for (const [name, marker] of [
         assert.equal(module.stencil.style, `\n${style}\n\t\t`);
         assert.equal(module.preview.hbs, `\n${previewContent}\n\t\t`);
 
-        for (const [hook, content] of Object.entries(hooks)) {
-            assert.equal(module[hook], `\n${content}\n\t`);
+        for (const name of hookNames) {
+            assert.equal(module[name], `\n${hookContent}\n\t`);
         }
     });
 }
