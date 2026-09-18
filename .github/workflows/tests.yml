@@ -31,3 +31,14 @@ jobs:
 
       - name: Run tests
         run: node --test tests/*.test.mjs
+
+      - name: Test actual npm package in a clean project
+        run: node tests/npm-package.smoke.mjs
+
+      - name: Upload development package
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xibo-modules-dev-package
+          path: artifacts/*.tgz
+          if-no-files-found: error
