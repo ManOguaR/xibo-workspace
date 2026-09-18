@@ -14,7 +14,7 @@ export class DevServer {
     }
 
     public async start(): Promise<void> {
-        const server = await createServer({
+       const server = await createServer({
             root: this.options.root,
             configFile: false,
             mode: "development",

@@ -229,10 +229,13 @@ async function copyLibrary(
         throw error;
     }
 
+    const publicRoot = resolve(runRoot, "public");
+    await mkdir(publicRoot, { recursive: true });
+
     for (const entry of entries) {
         await cp(
             resolve(libraryRoot, entry.name),
-            resolve(runRoot, entry.name),
+            resolve(publicRoot, entry.name),
             {
                 recursive: true,
                 force: false,
