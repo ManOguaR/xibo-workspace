@@ -72,6 +72,8 @@ export async function runRunCommand(
         "utf8"
     );
 
+    await copyLibrary(projectRoot, runRoot);
+    
     // Servir el HTML generado.
     const server = new DevServer({
         root: runRoot,
@@ -205,6 +207,36 @@ async function collectBuildOutput(
             resolve(runRoot, entry.name),
             {
                 recursive: true
+            }
+        );
+    }
+}
+
+async function copyLibrary(
+    projectRoot: string,
+    runRoot: string
+): Promise<void> {
+    const libraryRoot = resolve(projectRoot, ".bootstrap", "library");
+
+    let entries;
+    try {
+        entries = await readdir(libraryRoot, { withFileTypes: true });
+    }
+    catch (error) {
+        if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+            return;
+        }
+        throw error;
+    }
+
+    for (const entry of entries) {
+        await cp(
+            resolve(libraryRoot, entry.name),
+            resolve(runRoot, entry.name),
+            {
+                recursive: true,
+                force: false,
+                errorOnExist: true
             }
         );
     }

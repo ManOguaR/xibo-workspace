@@ -114,6 +114,10 @@ export class BootstrapDiscovery {
             );
 
             if (entry.isDirectory()) {
+                if (directory === this.bootstrapRoot && entry.name === "library") {
+                    continue;
+                }
+
                 await this.discoverDirectory(
                     path,
                     result
