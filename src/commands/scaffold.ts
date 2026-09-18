@@ -5,6 +5,7 @@ import { addCompanionApp } from "./application.js";
 
 export async function runNewCommand(args: string[]): Promise<void> {
     const packageRoot = getPackageRoot();
+    const sdkPackage = JSON.parse(await readFile(resolve(packageRoot, "package.json"), "utf8")) as { version: string };
     const projectTemplatesRoot = resolve(packageRoot, "templates", "projects");
     const templates = await getTemplates(projectTemplatesRoot);
 
@@ -99,7 +100,7 @@ export async function runNewCommand(args: string[]): Promise<void> {
             ? { dependencies: projectOptions.dependencies }
             : {}),
         devDependencies: {
-            "xibo-modules": "^1.0.0",
+            "xibo-modules": sdkPackage.version,
             ...projectOptions.devDependencies
         }
     };
