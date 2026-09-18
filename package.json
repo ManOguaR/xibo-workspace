@@ -31,7 +31,11 @@
     "rebuild": "npm run clean && npm run build",
     "prepack": "npm run build && node scripts/prepare-license.mjs"
   },
-  "keywords": ["xibo", "digital-signage", "sdk"],
+  "keywords": [
+    "xibo",
+    "digital-signage",
+    "sdk"
+  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {
@@ -40,6 +44,7 @@
     "typescript": "^7.0.2"
   },
   "dependencies": {
+    "@types/jquery": "^4.0.1",
     "fast-xml-parser": "^5.11.1",
     "fast-xml-validator": "^1.4.2",
     "tsx": "^4.23.13",
