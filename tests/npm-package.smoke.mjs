@@ -89,7 +89,7 @@ try {
             throw new Error(`xibo run exited prematurely: ${serverOutput}`);
         }
         try {
-            const response = await fetch("http://127.0.0.1:9696/", {
+            const response = await fetch("http://localhost:9696/", {
                 signal: AbortSignal.timeout(1500)
             });
             if (response.ok) {
