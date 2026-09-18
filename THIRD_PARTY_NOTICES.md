@@ -1,27 +1,30 @@
 # Third-party notices
 
-This file covers third-party material committed to **xibo-modules / xibo-workspace**. The repository's own `LICENSE` is ISC; it does not override the licenses of the separate upstream material identified here.
+This file identifies third-party materials supplied with `xibo-modules`. The repository's own `LICENSE` is ISC; it does not replace the licenses governing upstream Xibo material.
 
-## Xibo CMS — mock player support
+## Xibo CMS 4.4.x — local development player
 
-**Copyright:** Copyright (C) 2006–2026 Xibo Signage Ltd and contributors. Retain the notices in upstream files.
+- **Copyright:** Xibo Signage Ltd and contributors. Copyright notices in upstream files are preserved.
+- **License:** GNU Affero General Public License version 3 or later (`AGPL-3.0-or-later`). The complete license is included as `LICENSES/AGPL-3.0.txt` in the npm archive. See also `LICENSES/AGPL-3.0.md` for the official upstream text and license information.
+- **Official source:** https://github.com/xibosignage/xibo-cms/tree/release44
+- **Xibo CMS 4.4.3 release and source:** https://github.com/xibosignage/xibo-cms/releases/tag/4.4.3 and https://github.com/xibosignage/xibo-cms/tree/4.4.3
+- **Twig source:** https://github.com/xibosignage/xibo-cms/blob/4.4.3/modules/widget-html-render.twig
+- **Bundle build source:** https://github.com/xibosignage/xibo-cms/blob/4.4.3/modules/bundle.js and the source dependencies/build inputs in that release.
 
-**License:** GNU Affero General Public License, version 3 or later (`AGPL-3.0-or-later`). License information and the link to the complete upstream license: [`LICENSES/AGPL-3.0.md`](LICENSES/AGPL-3.0.md).
+The development assets originated from an official Xibo CMS distribution ZIP, as identified by the project maintainer. An independent binary hash match to a specific release archive has not been recorded; the source links above describe the target 4.4.x line and its pinned 4.4.3 reference.
 
-**Upstream source:** https://github.com/xibosignage/xibo-cms/tree/release44 (Xibo CMS 4.4.x). The upstream `LICENSE` is at https://github.com/xibosignage/xibo-cms/blob/release44/LICENSE. Source of the host Twig template: https://github.com/xibosignage/xibo-cms/blob/release44/modules/widget-html-render.twig. The original player bundle is shipped in Xibo CMS distributions; source/build inputs are in the same upstream repository, including `modules/bundle.js` and the relevant dependencies. The user identifies the origin of the mock assets as the same official Xibo ZIP; the exact archive version has not been independently matched by hash.
+Included files:
 
-**Files in this repository:**
+- `src/developer/xibo-player/widget-html-render.twig`: upstream Twig host; original copyright and AGPL header restored.
+- `src/developer/xibo-player/bundle.min.js`: **nonempty compiled Xibo player bundle (~2.3 MB)** used by the local mock. It may include third-party JavaScript with separate notices; preserve the notices included in the bundle and use the matching Xibo source when distributing or replacing it.
+- `src/developer/xibo-player/fonts.css`: locally authored mock CSS referring to fonts installed on the user's machine. No font binaries are bundled.
 
-- `src/developer/xibo-player/widget-html-render.twig`: Xibo host rendering template used by the local mock. Its original copyright/AGPL header is preserved. Only the mock uses this Xibo template; do not interpret its AGPL notice as replacing the repository's ISC `LICENSE`.
-- `src/developer/xibo-player/bundle.min.js`: currently an **empty placeholder** in `main`, not a redistributed copy of compiled Xibo or third-party libraries. When populated from an Xibo distribution, retain upstream notices and identify the exact corresponding version/source (including any third-party notices bundled in it) before redistributing the binary.
-- `src/developer/xibo-player/fonts.css`: locally authored mock CSS selecting locally installed fonts by name. No font files are included or redistributed.
-
-No claim of ownership of Xibo software, trademarks or assets is made. Xibo remains the property of its respective rights holders.
+The Xibo assets are distributed for local development and are not claimed to be original SDK code. Attribution does not imply endorsement by Xibo.
 
 ## GSAP demo
 
-`templates/projects/demo` declares `gsap` as an npm dependency. GSAP's code is not checked into this repository as a vendored library; downstream installations obtain it separately through npm under its own license and terms. Its presence as a dependency does not change the Xibo notices above.
+`templates/projects/demo` declares `gsap` as an npm dependency. No GSAP library binary is vendored into this SDK. Users installing the demo obtain GSAP separately through npm under GSAP's own license and terms.
 
-## Redistribution notes
+## Redistribution
 
-Retain copyright and license notices when copying Xibo material. For any nonempty Xibo JavaScript bundle distributed in object-code form, provide the applicable license text and clear access to the corresponding source of the **matching** upstream release (including build scripts and any relevant third-party component notices). These notices identify the currently committed sources; review them if new vendored assets are added. Packaging/install verification belongs to #51, not to this license inventory.
+Preserve upstream notices. When redistributing compiled Xibo code, include its full AGPL license and ensure the corresponding matching source, build scripts, and relevant third-party notices remain accessible. The SDK's own license does not supersede these obligations. Installation and npm packaging tests are tracked separately in issue #51.
