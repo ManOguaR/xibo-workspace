@@ -26,7 +26,9 @@ try {
     const { stdout } = await command(npm, [
         "pack", "--json", "--pack-destination", artifacts
     ], repo);
-    const [packed] = JSON.parse(stdout);
+    // npm can print prepack lifecycle output before its final JSON document.
+    const jsonStart = stdout.lastIndexOf("\n[");
+    const [packed] = JSON.parse(stdout.slice(jsonStart < 0 ? 0 : jsonStart + 1));
     assert.equal(packed.name, "xibo-modules");
     assert.match(packed.version, /-dev\./);
 
@@ -38,7 +40,8 @@ try {
         "templates/projects/demo/.bootstrap/BounceTemplate.ts",
         "src/developer/xibo-player/widget-html-render.twig",
         "src/developer/xibo-player/fonts.css",
-        "THIRD_PARTY_NOTICES.md"
+        "THIRD_PARTY_NOTICES.md",
+        "LICENSES/AGPL-3.0.md"
     ]) {
         assert.ok(contents.has(file), `npm package is missing ${file}`);
     }
