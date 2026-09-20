@@ -11,6 +11,8 @@ export abstract class XiboModuleApplication {
         properties: any,
         meta: any
     ): boolean {
+        app.onPreInitialize(id, target, properties, meta);
+
         app.#config = target.querySelector(
             "[data-application-config]"
         );
@@ -32,13 +34,20 @@ export abstract class XiboModuleApplication {
         return this.#config?.dataset[key];
     }
 
+    protected onPreInitialize(
+        id: string,
+        target: HTMLElement,
+        properties: any,
+        meta: any
+    ): void {}
+
     protected onInitialize(
         id: string,
         target: HTMLElement,
         properties: any,
         meta: any
     ): void {}
-    
+
     abstract render(
         target: HTMLElement,
         items: any,
