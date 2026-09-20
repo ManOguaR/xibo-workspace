@@ -1,4 +1,4 @@
-import type { XiboModuleApplication } from "./XiboModuleApplication.js"
+import { XiboModuleApplication } from "./XiboModuleApplication.js"
 
 type AppConstructor = new () => XiboModuleApplication;
 
@@ -30,8 +30,13 @@ class XiboAppBootstrap {
         
         const instance = new this.App();
         
+        if (!XiboModuleApplication.initialize(
+            instance, id, target, properties, meta
+        )) {
+            throw new Error(`Application initialization failed: ${id}`);
+        }
+        
         this.instances.set(id, instance);
-        instance.initialize(id, target, properties, meta);
         
         return instance;
     }
