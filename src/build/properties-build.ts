@@ -1,4 +1,4 @@
-import { XiboModule, XiboModuleTemplate } from "xibo-modules";
+import { XiboModuleBase, XiboModuleTemplate } from "xibo-modules";
 
 export interface XiboPropertyDefinition {
     type: string;
@@ -36,7 +36,7 @@ export function registerProperty(
         const id = context.name;
 
         context.addInitializer(function () {
-            if (collection === "settings" && !(this instanceof XiboModule)) {
+            if (collection === "settings" && !(this instanceof XiboModuleBase)) {
                 throw new Error(`@XiboSetting("${id}") can only be used in XiboModule.`);
             }
             
@@ -65,7 +65,7 @@ type TemplateProperties =
     Pick<PropertyCollections, "properties">;
 
 export function getXiboPropertyDefinitions(
-    instance: XiboModule
+    instance: XiboModuleBase
 ): ModuleProperties;
 
 export function getXiboPropertyDefinitions(
@@ -73,14 +73,14 @@ export function getXiboPropertyDefinitions(
 ): TemplateProperties;
 
 export function getXiboPropertyDefinitions(
-    instance: XiboModule | XiboModuleTemplate
+    instance: XiboModuleBase | XiboModuleTemplate
 ): ModuleProperties | TemplateProperties {
 
     const collections = registry.get(instance);
 
     const properties = [...(collections?.properties ?? [])];
 
-    if (instance instanceof XiboModule) {
+    if (instance instanceof XiboModuleBase) {
         return {
             properties,
             settings: [...(collections?.settings ?? [])]

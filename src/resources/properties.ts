@@ -8,7 +8,7 @@ export function XiboSetting(definition: XiboPropertyDefinition) {
     return registerProperty("settings", definition);
 }
 
-// import { XiboModule, XiboModuleTemplate } from "xibo-modules";
+// import { XiboModuleBase, XiboModuleTemplate } from "xibo-modules";
 
 // export interface XiboPropertyDefinition {
 //     type: string;

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { XMLParser } from "fast-xml-parser";
 import { SyntaxValidator } from "fast-xml-validator";
 
-import { XiboModule, XiboStaticTemplate } from "../dist/index.js";
+import { XiboModuleBase, XiboStaticTemplate } from "../dist/index.js";
 import { XiboModuleDefinitionBuilder } from "../dist/build/builders/definition-builder.js";
 import { XiboPlayerHook } from "../dist/build/private-types.js";
 import { XiboModuleXmlGenerator } from "../dist/build/generators/module-generator.js";
@@ -47,7 +47,7 @@ test("hook: rejects async methods and unsupported function forms", () => {
 });
 
 test("hook: authored module and static-template methods traverse builder to XML", () => {
-    class DemoModule extends XiboModule {
+    class DemoModule extends XiboModuleBase {
         onInitialize(id, target, properties, meta) {
             console.log("Initializing", id);
             BattleMaster.onInitialize(id, target, properties, meta);

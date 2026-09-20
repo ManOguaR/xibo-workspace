@@ -1,4 +1,4 @@
-import { XiboModule, XiboModuleTemplate } from 'xibo-modules';
+import { XiboModuleBase, XiboModuleTemplate } from 'xibo-modules';
 import { JsonObject, JsonValue, ValidationIssue, ValidationSeverity } from "../private-types.js";
 
 export class BootstrapValidator {

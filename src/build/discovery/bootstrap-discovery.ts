@@ -3,7 +3,7 @@ import { readdir, readFile } from "node:fs/promises";
 import { extname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { XiboModule, XiboModuleTemplate } from "xibo-modules";
+import { XiboModuleBase, XiboModuleTemplate } from "xibo-modules";
 import { BootstrapDiscoveryResult, ValidationSeverity } from "../private-types.js";
 import { BootstrapValidator } from "../validation/bootstrap-validator.js"
 
@@ -241,7 +241,7 @@ export class BootstrapDiscovery {
                 continue;
             }
 
-            if (instance instanceof XiboModule) {
+            if (instance instanceof XiboModuleBase) {
                  if (result.module !== undefined) {
                     result.issues.push({
                         severity: ValidationSeverity.Critical,

@@ -99,7 +99,7 @@ Module authors work with TypeScript abstractions rather than directly assembling
 For example:
 
 ```ts
-import { XiboModule } from "xibo-modules";
+import { XiboModuleBase } from "xibo-modules";
 
 export default class MyModule extends XiboModule {
 }

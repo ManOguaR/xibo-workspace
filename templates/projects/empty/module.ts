@@ -1,4 +1,4 @@
-import { XiboModule } from "xibo-modules";
+import { XiboModuleBase } from "xibo-modules";
 
-export default class __MODULE_NAME__ extends XiboModule {
+export default class __MODULE_NAME__ extends XiboModuleBase {
 }

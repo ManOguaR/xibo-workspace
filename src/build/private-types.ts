@@ -1,4 +1,4 @@
-import { StencilOptions, XiboModule, XiboModuleTemplate } from "xibo-modules";
+import { StencilOptions, XiboModuleBase, XiboModuleTemplate } from "xibo-modules";
 
 export type JsonValue =
     | string
@@ -27,7 +27,7 @@ export interface ValidationIssue {
 }
 
 export class BootstrapDiscoveryResult {
-    module?: XiboModule;
+    module?: XiboModuleBase;
     templates: XiboModuleTemplate[] = [];
     metadata: JsonObject = {};
     issues: ValidationIssue[] = [];

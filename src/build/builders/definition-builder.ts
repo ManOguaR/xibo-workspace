@@ -1,11 +1,11 @@
-import { XiboModule, XiboModuleTemplate } from "xibo-modules";
+import { XiboModuleBase, XiboModuleTemplate } from "xibo-modules";
 import { getXiboPropertyDefinitions } from "../properties-build.js";
 import { BootstrapDiscoveryResult, JsonObject, XiboPlayerHook } from "../private-types.js";
 import { CompanionAppDefinition, XiboModuleDefinition, XiboModuleTemplateDefinition, XiboDatatypeDefinition, XiboAssetDefinition } from './module-definition.js';
 
 export class XiboModuleDefinitionBuilder {
     private moduleDefinition?: XiboModuleDefinition;
-    private xiboModule? : XiboModule;
+    private xiboModule? : XiboModuleBase;
     private readonly xiboModuleTemplates: XiboModuleTemplate[] = [];
 
     public addBootstrap(
@@ -74,7 +74,7 @@ export class XiboModuleDefinitionBuilder {
     }
 
     public addModule(
-        module: XiboModule,
+        module: XiboModuleBase,
         metadata: JsonObject
     ): XiboModuleDefinitionBuilder {
         if(this.moduleDefinition !== undefined && this.xiboModule !== undefined) {
@@ -327,7 +327,7 @@ export class XiboModuleDefinitionBuilder {
     }
 
     private getModuleType(
-        module: XiboModule
+        module: XiboModuleBase
     ): string {
         return module.constructor.name
             .replace(/Module$/, "");
