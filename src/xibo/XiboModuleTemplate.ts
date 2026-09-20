@@ -37,7 +37,7 @@ export abstract class XiboStaticAppTemplate extends XiboStaticTemplate {
         properties: any,
         meta: any
     ) {
-        const app = bootstrApp.instances.get(id);
+        const app = window.xiboModules.instances.get(id);
         
         if (!app) {
             throw new Error(`Application instance not found: ${id}`);
@@ -48,11 +48,9 @@ export abstract class XiboStaticAppTemplate extends XiboStaticTemplate {
 
         if (!view) {
             app.rendered = false
-            return { handled: false };
+            return;
         }
 
         app.render(view, items, properties, meta);
-
-        return { handled: false };
     }
 }

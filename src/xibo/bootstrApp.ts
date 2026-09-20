@@ -61,3 +61,13 @@ class XiboAppBootstrap {
 }
 
 export const bootstrApp = new XiboAppBootstrap();
+
+declare global {
+    interface Window {
+        xiboModules: typeof bootstrApp;
+    }
+}
+
+if (typeof window !== "undefined") {
+    window.xiboModules = bootstrApp;
+}

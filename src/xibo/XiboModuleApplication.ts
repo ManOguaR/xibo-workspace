@@ -14,7 +14,7 @@ export abstract class XiboModuleApplication {
         items: any,
         properties: any,
         meta: any
-    ): { handled: boolean };
+    ): void;
 
     renderDebugInfo(target: HTMLElement): void {}
 

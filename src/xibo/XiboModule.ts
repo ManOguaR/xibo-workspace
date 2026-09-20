@@ -1,4 +1,5 @@
-import { StencilSource, twig } from "../resources/stencil.js";
+import { getXiboPropertyDefinitions } from "../build/properties-build.js"
+import { StencilSource, TwigSource } from "../resources/stencil.js";
 import type { XiboPropertyGroups } from "../resources/properties.js";
 import { bootstrApp } from "./bootstrApp.js";
 import { XiboModuleApplication } from "./XiboModuleApplication.js";
@@ -18,27 +19,28 @@ export interface XiboModuleBase {
 }
 
 export abstract class XiboModule extends XiboModuleBase {
-    private currentApp?: XiboModuleApplication;
-
-    protected get application(): XiboModuleApplication | undefined {
-        return this.currentApp;
-    }
-    
-    //TODO: Print data-appname-config
     //TODO: Iterate @Settings data-setting-name= {{setting}}
-    //TODO: We can render a data-module-view to optionally render in module
-    stencil = twig`
-		<div
-			data-application-config
-			data-hub-url="{{ settings.hubUrl }}"
-			data-api-url="{{ settings.apiUrl }}"
-			data-debug-enabled="{{ settings.isDebug }}"
-			hidden></div>
-        <div data-module-view></div>
-	`;
+    stencil = new TwigSource(() => {
+        const definitions = getXiboPropertyDefinitions(this).settings;
+        const attributes = definitions.map(({ id }) => {
+            const name = id.replace(
+                /[A-Z]/g,
+                letter => `-${letter.toLowerCase()}`
+            );
+
+            return `data-setting-${name}="{{ settings.${id} }}"`;
+        }).join("\n");
+
+        return `
+            <div data-application-config
+                ${attributes}
+                hidden></div>
+            <div data-module-view></div>
+        `;
+    });
 
     override onInitialize(id: string, target: { 0: HTMLElement }, properties: any, meta: any) {
-        this.currentApp = bootstrApp.init(id, target[0], properties, meta);
+        window.xiboModules.init(id, target[0], properties, meta);
 	}
 
 	onRender(
@@ -47,10 +49,8 @@ export abstract class XiboModule extends XiboModuleBase {
         items: any,
         properties: any,
         meta: any
-    ): void {
-        this.currentApp = bootstrApp.instances.get(id);
-        
-        const application = this.application;
+    ): void {     
+        const application = window.xiboModules.instances.get(id);
         if (!application) return;
         
         if (!application.rendered) {
