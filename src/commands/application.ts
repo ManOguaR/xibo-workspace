@@ -85,6 +85,20 @@ export async function addCompanionApp(
         }
     }
 
+    const modulePath = resolve(projectRoot, ".bootstrap", "module.ts");
+    const moduleSource = await readFile(modulePath, "utf8");
+
+    if (/\bextends\s+XiboModuleBase\b/.test(moduleSource)) {
+        await writeFile(
+            modulePath,
+            moduleSource.replaceAll("XiboModuleBase", "XiboModule")
+        );
+    } else if (!/\bextends\s+XiboModule\b/.test(moduleSource)) {
+        throw new Error(
+            "The module must extend XiboModuleBase or XiboModule."
+        );
+    }
+
     await mkdir(
         sourceRoot,
         {
@@ -124,31 +138,6 @@ import { MyApplication } from "./MyApplication.js";
 
 bootstrApp.register(MyApplication);
 `
-    );
-
-    const modulePath = resolve(
-        projectRoot,
-        ".bootstrap",
-        "module.ts"
-    );
-
-    const moduleSource = await readFile(modulePath, "utf8");
-
-    if (/\bextends\s+XiboModuleBase\b/.test(moduleSource)) {
-        await writeFile(
-            modulePath,
-            moduleSource.replace(/\bXiboModuleBase\b/g, "XiboModule")
-        );
-    } else if (!/\bextends\s+XiboModule\b/.test(moduleSource)) {
-        throw new Error("The module must extend XiboModuleBase or XiboModule.");
-    }
-
-    await writeFile(
-        modulePath,
-        moduleSource.replaceAll(
-            "XiboModuleBase",
-            "XiboModule"
-        )
     );
 
     packageJson.xibo.vite = "src/main.ts";
