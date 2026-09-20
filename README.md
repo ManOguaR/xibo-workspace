@@ -64,7 +64,7 @@ Package / local runtime
 
 The build pipeline is deliberately more important than any individual generator.
 
-Each feature has a defined place in the process, with known inputs and outputs, so new capabilities can be added without turning the project into a collection of unrelated scripts.
+Each feature has a defined place in the build flow, with known inputs and outputs, so new capabilities can be added without turning the project into a collection of unrelated scripts.
 
 ## Why
 
@@ -96,7 +96,7 @@ Xibo understands its own module system well, but it is not intended to be a gene
 
 Module authors work with TypeScript abstractions rather than directly assembling every build artifact.
 
-For example:
+For a module without the SDK-managed companion application lifecycle, use `XiboModuleBase`:
 
 ```ts
 import { XiboModuleBase } from "xibo-modules";
@@ -139,6 +139,53 @@ Vite-built companion application
 ```
 
 These are not separate product models. They are different levels of complexity inside the same module toolchain.
+
+### Application bootstrap and settings (dev.5)
+
+`XiboModule` opts into the SDK-managed companion application lifecycle. It generates a `[data-application-config]` element containing `data-setting-*` attributes from the module's declared settings. `XiboModuleBase` does not impose this lifecycle; use it for modules that do not need it. `XiboStaticAppTemplate` provides the default static-template stencil and render hook for companion applications.
+
+The browser-facing entry point is `xibo-modules/app`. The app entry registers its class once:
+
+```ts
+import { bootstrApp } from "xibo-modules/app";
+import { MyApplication } from "./MyApplication.js";
+
+bootstrApp.register(MyApplication);
+```
+
+In `v1.0.0-dev.5`, `XiboModuleApplication` owns the configuration lookup and exposes `protected getSetting(name): string | undefined`. For example, `this.getSetting("hubUrl")` reads the generated `data-setting-hub-url` attribute. It returns the attribute's string value (or `undefined`), not a parsed boolean or another inferred type.
+
+Initialization follows this order:
+
+```text
+bootstrApp.init(id, target, properties, meta)
+    → construct application
+    → find [data-application-config]
+    → application.onInitialize(id, target, properties, meta)
+    → register the initialized instance
+```
+
+Application-specific setup belongs in the overridable `onInitialize` hook, rather than overriding the SDK's initialization boundary. If the required configuration element is absent, or `onInitialize` throws synchronously, initialization fails and that instance is not registered. The SDK reports synchronous hook exceptions to the console.
+
+The CLI's default `xibo new <name> <target>` creates and registers a companion application. The explicit `xibo new empty <name> <target>` creates a module-only project; `xibo app add` adds an application to an existing compatible project.
+
+## Quick start (GitHub development package)
+
+The current GitHub prerelease is [`v1.0.0-dev.5`](https://github.com/ManOguaR/xibo-workspace/releases/tag/v1.0.0-dev.5), distributed as an **SDK npm `.tgz`**, not as an installable Xibo CMS module. Node.js 22.12 or later is required. To use the GitHub package before an npm-registry release, install the tagged archive explicitly:
+
+```sh
+mkdir xibo-sandbox
+cd xibo-sandbox
+npm init -y
+npm install --save-dev https://github.com/ManOguaR/xibo-workspace/releases/download/v1.0.0-dev.5/xibo-modules-1.0.0-dev.5.tgz
+npx xibo new my-module ./my-module
+cd my-module
+npm install --save-dev https://github.com/ManOguaR/xibo-workspace/releases/download/v1.0.0-dev.5/xibo-modules-1.0.0-dev.5.tgz
+npx xibo build
+npx xibo run
+```
+
+`xibo run` serves the generated build in the local development mock, not a real Xibo CMS. Specify a template ID with `xibo run <id>` when you want to preview a particular generated static template. Full Xibo 4.4.x XML-contract coverage, the generated PHP provider, deployable Xibo module packaging and real-CMS verification are not yet complete.
 
 ## CLI
 
