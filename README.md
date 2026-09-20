@@ -101,7 +101,7 @@ For example:
 ```ts
 import { XiboModuleBase } from "xibo-modules";
 
-export default class MyModule extends XiboModule {
+export default class MyModule extends XiboModuleBase {
 }
 ```
 
