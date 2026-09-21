@@ -67,6 +67,7 @@ export async function runBuildCommand(): Promise<void> {
                 outDir: `.xibo/dist/${moduleDefinition.type}`,
                 emptyOutDir: true,
                 cssCodeSplit: false,
+                sourcemap: true,
                 rolldownOptions: {
                     output: {
                         codeSplitting: false,
@@ -300,7 +301,10 @@ async function collectAssets(
     }
 
     return entries
-        .filter(entry => entry.isFile())
+        .filter(entry =>
+            entry.isFile() &&
+            !entry.name.endsWith(".map")
+        )
         .map(entry =>
             new XiboAssetDefinition(
                 getAssetId(entry.name),

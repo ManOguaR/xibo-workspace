@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Xibo Mock - Debug",
+      "type": "msedge",
+      "request": "launch",
+      "url": "http://localhost:9696",
+      "webRoot": "${env:TEMP}\\xibo-workspace\\run",
+      "sourceMaps": true,
+      "sourceMapPathOverrides": {
+        "../../../../src/*": "${workspaceFolder}/src/*"
+      }
+    }
+  ]
+}
