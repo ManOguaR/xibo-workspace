@@ -51,6 +51,7 @@
     "@types/jquery": "^4.0.1",
     "fast-xml-parser": "^5.11.1",
     "fast-xml-validator": "^1.4.2",
+    "fflate": "^0.8.3",
     "tsx": "^4.23.13",
     "twing": "^7.3.1",
     "vite": "^8.3.0"

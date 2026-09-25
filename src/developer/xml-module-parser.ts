@@ -397,7 +397,7 @@ export class XiboPlayerAdapter {
             .replace(/\[\[assetId=([^\]]+)\]\]/g, (_token, id: string) => {
                 const path = paths.get(id);
                 if (path === undefined) throw new Error(`Unresolved Xibo asset: ${id}`);
-                return path;
+                return path.replace(/^\/?common\//, "/");
             });
     }
 }

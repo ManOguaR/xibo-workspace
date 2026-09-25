@@ -67,7 +67,7 @@ export class XiboModuleDefinitionBuilder {
 
         const vite = bootstrap.metadata["vite"];
         if (typeof vite === "string") {
-            this.addApplication(vite);
+            this.addApplication(vite, bootstrap.metadata);
         }
 
         return this;
@@ -207,19 +207,44 @@ export class XiboModuleDefinitionBuilder {
     }
 
     public addApplication(
-        entrypoint: string
+        entrypoint: string,
+        metadata: JsonObject
     ): XiboModuleDefinitionBuilder {
         const moduleDefinition = this.ensureModule();
-
+        
         if (moduleDefinition.companionAppDefinition !== undefined) {
             throw new Error("A companion application has already been added.");
         }
+        
+        const templateEntrypoints: Record<string, string> = {};
+        
+        for (const template of moduleDefinition.templateDefinitions) {
+            const templateMetadata = metadata[template.id];
+            
+            if (
+                templateMetadata === null ||
+                typeof templateMetadata !== "object" ||
+                Array.isArray(templateMetadata)
+            ) {
+                continue;
+            }
+            
+            const vite = templateMetadata["vite"];
 
+            if (vite === undefined) {
+                continue;
+            }
+
+            if (typeof vite !== "string" || vite.length === 0) {
+                throw new Error(`Template '${template.id}' has an invalid Vite entrypoint.`);
+            }
+            
+            templateEntrypoints[template.id] = vite;
+        }
+        
         moduleDefinition.companionAppDefinition =
-            new CompanionAppDefinition(
-                entrypoint
-        );
-
+            new CompanionAppDefinition(entrypoint, templateEntrypoints);
+            
         return this;
     }
 

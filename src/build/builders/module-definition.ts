@@ -146,7 +146,8 @@ export class XiboAssetDefinition {
 
 export class CompanionAppDefinition {
     public constructor(
-        public entrypoint: string
+        public entrypoint: string,
+        public templateEntrypoints: Record<string, string> = {}
     ) {
     }
 }

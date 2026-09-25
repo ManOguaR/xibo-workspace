@@ -1,5 +1,6 @@
-import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
-import { resolve, extname } from "node:path";
+import { mkdir, readdir, readFile, rename, rm, writeFile } from "node:fs/promises";
+import { resolve, extname, relative, sep } from "node:path";
+import { zipSync } from "fflate";
 import { build as viteBuild } from "vite";
 import { 
     BootstrapDiscovery, 
@@ -59,28 +60,94 @@ export async function runBuildCommand(): Promise<void> {
 
     const app = moduleDefinition.companionAppDefinition;
     if (app !== undefined) {
+        const outDir = `.xibo/dist/${moduleDefinition.type}`;
+        const moduleName = moduleDefinition.type.toLowerCase();
+
         compilation = await viteBuild({
             root: projectRoot,
             configFile: false,
             input: app.entrypoint,
             build: {
-                outDir: `.xibo/dist/${moduleDefinition.type}`,
+                outDir,
                 emptyOutDir: true,
                 cssCodeSplit: false,
                 sourcemap: true,
                 rolldownOptions: {
                     output: {
                         codeSplitting: false,
-                        entryFileNames: `assets/${moduleDefinition.type.toLowerCase()}.min.js`,
+                        entryFileNames: `assets/${moduleName}.min.js`,
                         assetFileNames: assetInfo =>
                             assetInfo.names.some(name => name.endsWith(".css"))
-                                ? `assets/${moduleDefinition.type.toLowerCase()}.min.css`
+                                ? `assets/${moduleName}.min.css`
                                 : "assets/[name]-[hash][extname]"
                     }
                 }
-            }            
+            }
         });
+
+        for (const [templateId, entrypoint] of Object.entries(app.templateEntrypoints)) {
+            await viteBuild({
+                root: projectRoot,
+                configFile: false,
+                input: entrypoint,
+                build: {
+                    outDir,
+                    emptyOutDir: false,
+                    cssCodeSplit: false,
+                    sourcemap: true,
+                    rolldownOptions: {
+                        output: {
+                            format: "iife",
+                            codeSplitting: false,
+                            entryFileNames: `assets/${templateId}/${templateId}.min.js`,
+                            assetFileNames: assetInfo =>
+                                assetInfo.names.some(name => name.endsWith(".css"))
+                                    ? `assets/${templateId}/${templateId}.min.css`
+                                    : `assets/${templateId}/[name]-${templateId}[extname]`
+                        }
+                    }
+                }
+            });
+
+            // 3.a. Collect this template's resources.
+            const template = moduleDefinition.templateDefinitions.find(x => x.id === templateId);
+
+            if (!template) {
+                throw new Error(`Unknown template entrypoint: ${templateId}`);
+            }
+            
+            template.assets = await collectAssets(
+                resolve(projectRoot, ".xibo", "dist", moduleDefinition.type, "assets", templateId),
+                moduleDefinition.type
+            );
+        }
     }
+    // let compilation;
+
+    // const app = moduleDefinition.companionAppDefinition;
+    // if (app !== undefined) {
+    //     compilation = await viteBuild({
+    //         root: projectRoot,
+    //         configFile: false,
+    //         input: app.entrypoint,
+    //         build: {
+    //             outDir: `.xibo/dist/${moduleDefinition.type}`,
+    //             emptyOutDir: true,
+    //             cssCodeSplit: false,
+    //             sourcemap: true,
+    //             rolldownOptions: {
+    //                 output: {
+    //                     codeSplitting: false,
+    //                     entryFileNames: `assets/${moduleDefinition.type.toLowerCase()}.min.js`,
+    //                     assetFileNames: assetInfo =>
+    //                         assetInfo.names.some(name => name.endsWith(".css"))
+    //                             ? `assets/${moduleDefinition.type.toLowerCase()}.min.css`
+    //                             : "assets/[name]-[hash][extname]"
+    //                 }
+    //             }
+    //         }            
+    //     });
+    // }
 
     //
     // 4. Run build transformations / user tasks
@@ -114,7 +181,7 @@ export async function runBuildCommand(): Promise<void> {
     //
     // n. Package final Xibo module
     //
-    await packageModule(manifest);
+    await packageModule(manifest, moduleDefinition.type);
 
     console.log("Xibo module definition ingested:");
     console.log(moduleDefinition);
@@ -250,10 +317,60 @@ async function emitXiboModule(
 }
 
 async function packageModule(
-    manifest: JsonObject, 
+    manifest: JsonObject,
+    moduleType: string,
     output: string = resolve(process.cwd(), ".xibo")
-) {
-    
+): Promise<void> {
+    if (typeof manifest["module"] !== "string") {
+        throw new Error("Build manifest has no module entry.");
+    }
+
+    const distRoot = resolve(output, "dist");
+    const assetsRoot = resolve(distRoot, moduleType, "assets");
+
+    // Flatten template assets after their ownership has been recorded.
+    for (const directory of await readdir(assetsRoot, { withFileTypes: true })) {
+        if (!directory.isDirectory()) continue;
+
+        const sourceRoot = resolve(assetsRoot, directory.name);
+
+        for (const entry of await readdir(sourceRoot, { withFileTypes: true })) {
+            if (!entry.isFile()) {
+                throw new Error(`Unexpected directory in template assets: ${entry.name}`);
+            }
+
+            const destination = resolve(assetsRoot, entry.name);
+
+            try {
+                await readFile(destination);
+                throw new Error(`Asset name collision: ${destination}`);
+            } catch (error) {
+                if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+            }
+
+            await rename(resolve(sourceRoot, entry.name), destination);
+        }
+
+        await rm(sourceRoot, { recursive: true });
+    }
+
+    const files: Record<string, Uint8Array> = {};
+
+    async function addDirectory(directory: string): Promise<void> {
+        for (const entry of await readdir(directory, { withFileTypes: true })) {
+            const path = resolve(directory, entry.name);
+
+            if (entry.isDirectory()) {
+                await addDirectory(path);
+            } else if (entry.isFile()) {
+                const zipPath = relative(distRoot, path).split(sep).join("/");
+                files[zipPath] = await readFile(path);
+            }
+        }
+    }
+
+    await addDirectory(distRoot);
+    await writeFile(resolve(output, `${moduleType}.zip`), zipSync(files));
 }
 
 export class BuildValidationError extends Error {
@@ -279,7 +396,7 @@ function normalizePackageName(
 
 async function collectAssets(
     assetsRoot: string,
-    moduleType: string
+    moduleType: string,
 ): Promise<XiboAssetDefinition[]> {
 
     let entries;
@@ -310,7 +427,7 @@ async function collectAssets(
                 getAssetId(entry.name),
                 "path",
                 getAssetMimeType(entry.name),
-                `/${moduleType}/assets/${entry.name}`
+                `common/${moduleType}/assets/${entry.name}`
             )
         );
 }
