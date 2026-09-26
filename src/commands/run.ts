@@ -31,7 +31,6 @@ export async function runRunCommand(
         targetId
     );
 
-    // Recursos propios del entorno de desarrollo.
     const packageRoot = resolve(
         dirname(fileURLToPath(import.meta.url)),
         "../.."
@@ -54,7 +53,6 @@ export async function runRunCommand(
         resolve(runRoot, "fonts.css")
     );
 
-    // XML compilado → HTML.
     const renderer = new XiboWidgetRenderer();
 
     const html = await renderer.render(
@@ -71,10 +69,27 @@ export async function runRunCommand(
         html,
         "utf8"
     );
+    
+    const favicon = "data:image/svg+xml," + encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">' +
+        '<rect width="64" height="64" rx="12" fill="#101827"/>' +
+        '<path d="M9 22 27 48 M27 22 9 48" fill="none" ' +
+        'stroke="#f47652" stroke-width="7" stroke-linecap="round"/>' +
+        '<path d="M35 48V27l9 11 9-11v21" fill="none" ' +
+        'stroke="#1878f4" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '<circle cx="38" cy="15" r="3" fill="white" stroke="#1878f4" stroke-width="1.5"/>' +
+        '<circle cx="51" cy="15" r="3" fill="white" stroke="#1878f4" stroke-width="1.5"/>' +
+        '</svg>'
+    );
+
+    await writeFile(
+        resolve(runRoot, "index.html"),
+        html.replace("</head>", `<link rel="icon" href="${favicon}">\n</head>`),
+        "utf8"
+    );
 
     await copyLibrary(projectRoot, runRoot);
     
-    // Servir el HTML generado.
     const server = new DevServer({
         root: runRoot,
         targetId
