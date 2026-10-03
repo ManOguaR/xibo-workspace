@@ -10,12 +10,10 @@ export async function runRunCommand(
     args: string[]
 ): Promise<void> {
 
-    if (args.length > 1) {
-        throw new Error("Usage: xibo run [id]");
-    }
+    const options = parseRunArguments(args);
 
     const projectRoot = process.cwd();
-    const targetId = args[0];
+    const targetId = options.targetId;
 
     const runRoot = await prepareRunDirectory();
 
@@ -60,7 +58,8 @@ export async function runRunCommand(
         runRoot,
         resolve(playerRoot, "widget-html-render.twig"),
         {
-            templateId: targetId
+            templateId: targetId,
+            widgetId: options.widgetId
         }
     );
 
@@ -92,7 +91,8 @@ export async function runRunCommand(
     
     const server = new DevServer({
         root: runRoot,
-        targetId
+        targetId,
+        port: options.port
     });
 
     await server.start();
@@ -258,4 +258,72 @@ async function copyLibrary(
             }
         );
     }
+}
+
+interface RunOptions {
+    targetId?: string;
+    port?: number;
+    widgetId?: number;
+}
+
+function parseRunArguments(
+    args: string[]
+): RunOptions {
+
+    const options: RunOptions = {};
+
+    for (let i = 0; i < args.length; i++) {
+        const arg = args[i];
+
+        if (arg === "-port") {
+            const value = args[++i];
+            const port = Number(value);
+
+            if (
+                !Number.isInteger(port) ||
+                port < 1 ||
+                port > 65535
+            ) {
+                throw new Error(
+                    `Invalid port: ${value}`
+                );
+            }
+
+            options.port = port;
+            continue;
+        }
+
+        if (arg === "-widget") {
+            const value = args[++i];
+            const widgetId = Number(value);
+
+            if (
+                !Number.isInteger(widgetId) ||
+                widgetId < 1
+            ) {
+                throw new Error(
+                    `Invalid widget id: ${value}`
+                );
+            }
+
+            options.widgetId = widgetId;
+            continue;
+        }
+
+        if (arg.startsWith("-")) {
+            throw new Error(
+                `Unknown option: ${arg}`
+            );
+        }
+
+        if (options.targetId !== undefined) {
+            throw new Error(
+                "Usage: xibo run [id] [-port port] [-widget widgetId]"
+            );
+        }
+
+        options.targetId = arg;
+    }
+
+    return options;
 }

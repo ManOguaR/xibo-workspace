@@ -5,6 +5,7 @@ import { createServer } from "vite";
 export interface DevServerOptions {
     root: string;
     targetId?: string;
+    port?: number;
 }
 
 export class DevServer {
@@ -39,7 +40,7 @@ export class DevServer {
                 }
             }],
             server: {
-                port: 9696,
+                port: this.options.port ?? 9696,
                 strictPort: true
             }
         });
