@@ -153,7 +153,15 @@ export async function runBuildCommand(): Promise<void> {
     // 4. Run build transformations / user tasks
     //
     if (compilation !== undefined) {
-        // TODO: build transformations / user tasks
+        await rewriteCssAssetUrls(
+            resolve(
+                projectRoot,
+                ".xibo",
+                "dist",
+                moduleDefinition.type,
+                "assets"
+            )
+        );
     }
 
     //
@@ -472,5 +480,32 @@ function getAssetMimeType(
 
         default:
             return "application/octet-stream";
+    }
+}
+
+async function rewriteCssAssetUrls(
+    directory: string
+): Promise<void> {
+
+    for (const entry of await readdir(directory, { withFileTypes: true })) {
+        const path = resolve(directory, entry.name);
+
+        if (entry.isDirectory()) {
+            await rewriteCssAssetUrls(path);
+            continue;
+        }
+
+        if (!entry.isFile() || extname(entry.name).toLowerCase() !== ".css")
+            continue;
+
+        const css = await readFile(path, "utf8");
+
+        const transformed = css.replace(
+            /url\(\s*(["']?)\/assets\//g,
+            "url($1"
+        );
+
+        if (transformed !== css)
+            await writeFile(path, transformed, "utf8");
     }
 }
