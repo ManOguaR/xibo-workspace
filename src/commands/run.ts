@@ -15,7 +15,7 @@ export async function runRunCommand(
     const projectRoot = process.cwd();
     const targetId = options.targetId;
 
-    const runRoot = await prepareRunDirectory();
+    const runRoot = await prepareRunDirectory(options);
 
     await collectBuildOutput(
         projectRoot,
@@ -163,12 +163,12 @@ async function resolveTarget(
 }
 
 
-async function prepareRunDirectory(): Promise<string> {
+async function prepareRunDirectory(options: RunOptions): Promise<string> {
 
     const runRoot = resolve(
         tmpdir(),
         "xibo-workspace",
-        "run"
+        `run-${options.port ?? 9696}`
     );
 
     await rm(runRoot, {
@@ -299,7 +299,7 @@ function parseRunArguments(
 
             if (
                 !Number.isInteger(widgetId) ||
-                widgetId < 1
+                widgetId == 0
             ) {
                 throw new Error(
                     `Invalid widget id: ${value}`
